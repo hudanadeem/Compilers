@@ -1,0 +1,25 @@
+Isabella McIvor (1101334)
+Huda Nadeem (11439431)
+Zuya Abro (1109843)
+ 
+Checkpoint One
+ 
+1. to compile:
+make
+ 
+2. to output tree:
+
+print to terminal:
+java -cp /usr/share/java/cup.jar:. CM tests/filename.cm
+
+print to outputTree.txt file:
+java -cp /usr/share/java/cup.jar:. CM tests/filename.cm > outputTree.txt
+
+ 
+Extra:
+ 
+to check cm.flex (prints to output.txt):
+java -cp /usr/share/java/cup_runtime.jar:. Scanner tests/filename.cm > output.txt
+
+Resources:
+Courselink>CIS4650>Content>Assignment and Project>C1-Package

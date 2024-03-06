@@ -1,0 +1,321 @@
+/*
+  Created by: Isabella McIvor (1101334) , Huda Nadeem (11439431), Zuya Abro (1109843)
+  File Name: tiny.cup
+*/
+   
+   
+/* ----------------------Preliminary Declarations Section--------------------*/
+   
+import absyn.*;
+   
+/* Parser code to change the way the parser reports errors (include
+   line and column number of the error). */
+parser code {:
+    
+    /* Change the method report_error so it will display the line and
+       column of where the error occurred in the input as well as the
+       reason for the error which is passed into the method in the
+       String 'message'. */
+    public void report_error(String message, Object info) {
+   
+        /* Create a StringBuffer called 'm' with the string 'Error' in it. */
+        StringBuffer m = new StringBuffer("Error");
+   
+        /* Check if the information passed to the method is the same
+           type as the type java_cup.runtime.Symbol. */
+        if (info instanceof java_cup.runtime.Symbol) {
+            /* Declare a java_cup.runtime.Symbol object 's' with the
+               information in the object info that is being typecasted
+               as a java_cup.runtime.Symbol object. */
+            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+   
+            /* Check if the line number in the input is greater or
+               equal to zero. */
+            if (s.left >= 0) {                
+                /* Add to the end of the StringBuffer error message
+                   the line number of the error in the input. */
+                m.append(" in line "+(s.left+1));   
+                /* Check if the column number in the input is greater
+                   or equal to zero. */
+                if (s.right >= 0)                    
+                    /* Add to the end of the StringBuffer error message
+                       the column number of the error in the input. */
+                    m.append(", column "+(s.right+1));
+            }
+        }
+   
+        /* Add to the end of the StringBuffer error message created in
+           this method the message that was passed into this method. */
+        m.append(" : "+message);
+   
+        /* Print the contents of the StringBuffer 'm', which contains
+           an error message, out on a line. */
+        System.err.println(m);
+    }
+   
+    /* Change the method report_fatal_error so when it reports a fatal
+       error it will display the line and column number of where the
+       fatal error occurred in the input as well as the reason for the
+       fatal error which is passed into the method in the object
+       'message' and then exit.*/
+    public void report_fatal_error(String message, Object info) {
+        report_error(message, info);
+        System.exit(1);
+    }
+
+:};
+   
+   
+/* ------------Declaration of Terminals and Non Terminals Section----------- */
+   
+terminal IF, ELSE, BOOL, INT, RETURN, VOID, WHILE;
+terminal ASSIGN, EQ, NE, LT, GT, LTE, GTE, NOT, OR, AND;
+terminal PLUS, MINUS, TIMES, DIV;
+terminal COMMA, LPAREN, RPAREN, LBRACK, RBRACK, LCURLY, RCURLY, SEMI;
+terminal String ID, NUM, TRUTH;
+terminal ERROR;
+
+non terminal DecList program, dec_list;
+non terminal Dec dec;
+non terminal VarDec var_dec, param;
+non terminal FunctionDec fun_dec, fun_prototype;
+non terminal NameTy type_spec;
+non terminal VarDecList params, param_list, local_dec;
+non terminal ExpList stmt_list, args, arg_list;
+non terminal Var var;
+non terminal Exp compound_stmt, stmt, expr_stmt, expr, select_stmt, iter_stmt, return_stmt;
+non terminal Exp obool_expr, abool_expr, ubool_expr, simple_expr, additive_expr, signed_factor, factor, call, term;
+
+/* ----------------------------Grammar Section-------------------- */
+   
+start with program;
+
+program	      ::= dec_list:d
+                  {: RESULT = d; :}
+                  ;
+
+dec_list       ::= dec_list:d1 dec:d2
+                  {: DecList t = d1;
+                     while( t.tail != null )
+                        t = t.tail;
+                     t.tail = new DecList(d2, null);
+                     RESULT = d1;
+                  :}
+                  | dec:d
+                     {: RESULT = new DecList(d, null); 
+                  :}
+                  ;
+
+dec            ::= var_dec:v
+                  {: RESULT = v; :}
+                  | fun_dec:f 
+                  {: RESULT = f; :}
+                  | fun_prototype:f
+                  {: RESULT = f; :}
+                  ;
+
+var_dec        ::= type_spec:t ID:i SEMI
+                  {: RESULT = new SimpleDec(tleft, t, i); :}
+                  | type_spec:t ID:i LBRACK NUM:n RBRACK SEMI 
+                  {: RESULT = new ArrayDec(tleft, t, i, n); :}
+                  ;
+
+type_spec      ::= BOOL:b 
+                  {: RESULT = new NameTy(bleft, NameTy.BOOL); :}
+                  | INT:i
+                  {: RESULT = new NameTy(ileft, NameTy.INT); :}
+                  | VOID:v 
+                  {: RESULT = new NameTy(vleft, NameTy.VOID); :}
+                  ;
+
+fun_dec        ::= type_spec:t ID:i LPAREN params:p RPAREN compound_stmt:c
+                  {: RESULT = new FunctionDec(tleft, t, i, p, c); :}
+                  ;
+
+fun_prototype  ::= type_spec:t ID:i LPAREN params:p RPAREN:r SEMI 
+                  {: RESULT = new FunctionDec(tleft, t, i, p, new NilExp(rright)); :}
+                  ;
+
+params         ::= param_list:p 
+                  {: RESULT = p; :}
+                  | VOID:v 
+                  {: RESULT = new VoidParamList(); :}
+                  ;
+
+param_list     ::= param_list:p1 COMMA param:p2
+                  {: VarDecList t = p1;
+                     while( t.tail != null )
+                        t = t.tail;
+                     t.tail = new VarDecList(p2, null);
+                     RESULT = p1;
+                  :}
+                  | param: p
+                  {: RESULT = new VarDecList(p, null); :}
+                  ;
+
+param          ::= type_spec:t ID:i
+                  {: RESULT = new SimpleDec(tleft, t, i); :}
+                  | type_spec:t ID:i LBRACK RBRACK
+                  {: RESULT = new ArrayDec(tleft, t, i, null); :}
+                  ;
+
+compound_stmt  ::= LCURLY:c local_dec:l stmt_list:s RCURLY
+                  {: RESULT = new CompoundExp(cleft, l, s); :}
+                  ;
+
+local_dec      ::= local_dec:l var_dec:v
+                  {: VarDecList t = l;
+                     while( t.tail != null )
+                        t = t.tail;
+                     t.tail = new VarDecList(v, null);
+                     RESULT = l;
+                  :}
+                  | var_dec:v
+                  {: RESULT = new VarDecList(v, null); :}
+                  ;
+
+stmt_list      ::= stmt_list:s1 stmt:s2
+                  {: ExpList t = s1;
+                     while( t.tail != null )
+                        t = t.tail;
+                     t.tail = new ExpList(s2, null);
+                     RESULT = s1;
+                  :}
+                  | stmt:s
+                  {: RESULT = new ExpList(s, null); :}
+                  ;
+
+stmt           ::= expr_stmt:e 
+                  {: RESULT = e; :}
+                  | compound_stmt:c
+                  {: RESULT = c; :}
+                  | select_stmt:s
+                  {: RESULT = s; :}
+                  | iter_stmt:i
+                  {: RESULT = i; :}
+                  | return_stmt:r
+                  {: RESULT = r; :}
+                  ;
+            
+expr_stmt      ::= expr:e SEMI
+                  {: RESULT = e; :}
+                  | SEMI:s
+                  {: RESULT = new NilExp(sleft); :}
+                  ;
+
+select_stmt    ::= IF:i LPAREN expr:e RPAREN stmt:s
+                  {: RESULT = new IfExp(ileft, e, s, new NilExp(sright)); :}
+                  | IF:i LPAREN expr:e RPAREN stmt:s1 ELSE stmt:s2
+                  {: RESULT = new IfExp(ileft, e, s1, s2); :}
+                  ;
+
+iter_stmt      ::= WHILE:w LPAREN expr:e RPAREN stmt:s 
+                  {: RESULT = new WhileExp(wleft, e, s); :}
+                  ;
+
+return_stmt    ::= RETURN:r expr:e SEMI 
+                  {: RESULT = new ReturnExp(rleft, e); :}
+                  | RETURN:r SEMI 
+                  {: RESULT = new ReturnExp(rleft, new NilExp(rright)); :}
+                  ;
+
+expr           ::= var:v ASSIGN expr:e 
+                  {: RESULT = new AssignExp(vleft, new VarExp(vleft, v), e); :}
+                  | obool_expr:o
+                  {: RESULT = o; :}
+                  ;
+
+var            ::= ID:i
+                  {: RESULT = new SimpleVar(ileft, i); :}
+                  | ID:i LBRACK expr:e RBRACK
+                  {: RESULT = new IndexVar(ileft, i, e); :}
+                  ;
+
+obool_expr     ::= obool_expr:b OR:o abool_expr:a
+                  {: RESULT = new OpExp(bleft, b, OpExp.OR, a); :}
+                  | abool_expr:a
+                  {: RESULT = a; :}
+                  ;
+
+abool_expr     ::= abool_expr:ab AND:a ubool_expr:u
+                  {: RESULT = new OpExp(ableft, ab, OpExp.AND, u); :}
+                  | ubool_expr:u
+                  {: RESULT = u; :}
+                  ;
+
+ubool_expr     ::= NOT:n ubool_expr:u 
+                  {: RESULT = new OpExp(nleft, new NilExp(nleft), OpExp.NOT, u); :}
+                  | simple_expr:s
+                  {: RESULT = s; :}
+                  ;
+
+simple_expr    ::= additive_expr:a1 LTE additive_expr:a2
+                  {: RESULT = new OpExp(a1left, a1, OpExp.LTE, a2); :}
+                  | additive_expr:a1 LT additive_expr:a2
+                  {: RESULT = new OpExp(a1left, a1, OpExp.LT, a2); :}
+                  | additive_expr:a1 GT additive_expr:a2
+                  {: RESULT = new OpExp(a1left, a1, OpExp.GT, a2); :}
+                  | additive_expr:a1 GTE additive_expr:a2
+                  {: RESULT = new OpExp(a1left, a1, OpExp.GTE, a2); :}
+                  | additive_expr:a1 EQ additive_expr:a2
+                  {: RESULT = new OpExp(a1left, a1, OpExp.EQ, a2); :}
+                  | additive_expr:a1 NE additive_expr:a2
+                  {: RESULT = new OpExp(a1left, a1, OpExp.NE, a2); :}
+                  | additive_expr: a
+                  {: RESULT = a; :}
+                  ;
+
+additive_expr  ::= additive_expr:a PLUS term:t 
+                  {: RESULT = new OpExp(aleft, a, OpExp.PLUS, t); :}
+                  | additive_expr:a MINUS term:t 
+                  {: RESULT = new OpExp(aleft, a, OpExp.MINUS, t); :}
+                  | term:t
+                  {: RESULT = t; :}
+                  ;
+
+term           ::= term:t TIMES signed_factor:s
+                  {: RESULT = new OpExp(tleft, t, OpExp.TIMES, s); :}
+                  | term:t DIV signed_factor:s
+                  {: RESULT = new OpExp(tleft, t, OpExp.DIV, s); :}
+                  | signed_factor:s
+                  {: RESULT = s; :}
+                  ;
+
+signed_factor  ::= MINUS:m signed_factor:s 
+                  {: RESULT = new OpExp(mleft, new NilExp(mleft), OpExp.UMINUS, s); :}
+                  | factor:f
+                  {: RESULT = f; :}
+                  ;
+
+factor         ::= LPAREN expr:e RPAREN
+                  {: RESULT = e; :}
+                  | var:v
+                  {: RESULT = new VarExp(vleft, v); :}
+                  | call:c 
+                  {: RESULT = c; :}
+                  | NUM:n
+                  {: RESULT = new IntExp(nleft, n); :}
+                  | TRUTH:t
+                  {: RESULT = new BoolExp(tleft, Boolean.parseBoolean(t)); :}
+                  ;
+
+call           ::= ID:i LPAREN args:a RPAREN
+                  {: RESULT = new CallExp(ileft, i, a); :}
+                  ;
+
+args           ::= arg_list:a
+                  {: RESULT = a; :}
+                  | 
+                  {: RESULT = new ExpList(null, null); :}
+                  ;
+
+arg_list       ::= arg_list:a COMMA expr:e
+                  {: ExpList t = a;
+                     while( t.tail != null )
+                        t = t.tail;
+                     t.tail = new ExpList(e, null);
+                     RESULT = a;
+                  :}
+                  | expr:e 
+                  {: RESULT = new ExpList(e, null); :}
+                  ;

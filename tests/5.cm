@@ -1,0 +1,7 @@
+/* Missing close bracket */
+ 
+void main(void) {
+  int x;
+ 
+  x = input()
+  x = x + 1;

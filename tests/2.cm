@@ -1,0 +1,8 @@
+/* Missing semi colon error */
+ 
+void main(void) {
+  int x;
+ 
+  x = input()
+  x = x + 1;
+}
