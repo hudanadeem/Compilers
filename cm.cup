@@ -162,6 +162,10 @@ param          ::= type_spec:t ID:i
 
 compound_stmt  ::= LCURLY:c local_dec:l stmt_list:s RCURLY
                   {: RESULT = new CompoundExp(cleft, l, s); :}
+                  | LCURLY:c stmt_list:s RCURLY                                         // added
+                  {: RESULT = new CompoundExp(cleft, new VarDecList(null, null), s); :} // added
+                  | LCURLY:c local_dec:l RCURLY                                         // added
+                  {: RESULT = new CompoundExp(cleft, l, new ExpList(new NilExp(lright), null)); :} // added
                   ;
 
 local_dec      ::= local_dec:l var_dec:v
