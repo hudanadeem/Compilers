@@ -7,7 +7,9 @@ public class IntExp extends Exp {
 
 	public IntExp( int pos, String value ) {
 		this.pos = pos;
-		this.value = Integer.parseInt(value);
+		if (value != null) {
+			this.value = Integer.parseInt(value);
+		}
 	}
 
 	public void accept( AbsynVisitor visitor, int level ) {
