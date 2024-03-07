@@ -70,7 +70,7 @@ parser code {:
    
 terminal IF, ELSE, BOOL, INT, RETURN, VOID, WHILE;
 terminal ASSIGN, EQ, NE, LT, GT, LTE, GTE, NOT, OR, AND;
-terminal PLUS, MINUS, TIMES, DIV;
+terminal PLUS, MINUS, TIMES, DIV, UMINUS;
 terminal COMMA, LPAREN, RPAREN, LBRACK, RBRACK, LCURLY, RCURLY, SEMI;
 terminal String ID, NUM, TRUTH;
 terminal ERROR;
@@ -85,6 +85,12 @@ non terminal ExpList stmt_list, args, arg_list;
 non terminal Var var;
 non terminal Exp compound_stmt, stmt, expr_stmt, expr, select_stmt, iter_stmt, return_stmt;
 non terminal Exp obool_expr, abool_expr, ubool_expr, simple_expr, additive_expr, signed_factor, factor, call, term;
+
+precedence nonassoc LT, LTE, GT, GTE, EQ, NE;
+precedence left OR, AND;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIV;
+precedence right UMINUS;
 
 /* ----------------------------Grammar Section-------------------- */
    
@@ -161,6 +167,10 @@ param          ::= type_spec:t ID:i
 
 compound_stmt  ::= LCURLY:c local_dec:l stmt_list:s RCURLY
                   {: RESULT = new CompoundExp(cleft, l, s); :}
+                  | LCURLY:c stmt_list:s RCURLY
+                  {: RESULT = new CompoundExp(cleft, new VarDecList(null, null), s); :}
+                  | LCURLY:c local_dec:l RCURLY
+                  {: RESULT = new CompoundExp(cleft, l, new ExpList(new NilExp(lright), null)); :}
                   ;
 
 local_dec      ::= local_dec:l var_dec:v

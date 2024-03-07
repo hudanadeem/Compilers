@@ -11,7 +11,9 @@ public class ArrayDec extends VarDec {
 		this.pos = pos;
 		this.typ = typ;
 		this.name = name;
-		this.size = Integer.parseInt(size);
+		if (size != null) {
+			this.size = Integer.parseInt(size);
+		}
 	}
 
 	public void accept( AbsynVisitor visitor, int level ) {
