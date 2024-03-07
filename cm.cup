@@ -3,8 +3,6 @@
   File Name: tiny.cup
 */
    
-/* I am making a change to see if Git catches it*/
-   
 /* ----------------------Preliminary Declarations Section--------------------*/
    
 import absyn.*;
@@ -17,33 +15,36 @@ parser code {:
        column of where the error occurred in the input as well as the
        reason for the error which is passed into the method in the
        String 'message'. */
-    public void report_error(String message, Object info) {
+    public void report_error(String message, int col, int row) {
    
         /* Create a StringBuffer called 'm' with the string 'Error' in it. */
         StringBuffer m = new StringBuffer("Error");
+        m.append(" in line "+(col+1)); 
+        m.append(", column "+(row+1));
    
         /* Check if the information passed to the method is the same
            type as the type java_cup.runtime.Symbol. */
-        if (info instanceof java_cup.runtime.Symbol) {
-            /* Declare a java_cup.runtime.Symbol object 's' with the
-               information in the object info that is being typecasted
-               as a java_cup.runtime.Symbol object. */
-            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+      //   if (info instanceof java_cup.runtime.Symbol) {
+
+      //       /* Declare a java_cup.runtime.Symbol object 's' with the
+      //          information in the object info that is being typecasted
+      //          as a java_cup.runtime.Symbol object. */
+      //       java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
    
-            /* Check if the line number in the input is greater or
-               equal to zero. */
-            if (s.left >= 0) {                
-                /* Add to the end of the StringBuffer error message
-                   the line number of the error in the input. */
-                m.append(" in line "+(s.left+1));   
-                /* Check if the column number in the input is greater
-                   or equal to zero. */
-                if (s.right >= 0)                    
-                    /* Add to the end of the StringBuffer error message
-                       the column number of the error in the input. */
-                    m.append(", column "+(s.right+1));
-            }
-        }
+      //       /* Check if the line number in the input is greater or
+      //          equal to zero. */
+      //       if (s.left >= 0) {                
+      //           /* Add to the end of the StringBuffer error message
+      //              the line number of the error in the input. */
+      //           m.append(" in line "+(s.left+1));   
+      //           /* Check if the column number in the input is greater
+      //              or equal to zero. */
+      //           if (s.right >= 0)                    
+      //               /* Add to the end of the StringBuffer error message
+      //                  the column number of the error in the input. */
+      //               m.append(", column "+(s.right+1));
+      //       }
+      //   }
    
         /* Add to the end of the StringBuffer error message created in
            this method the message that was passed into this method. */
@@ -125,6 +126,9 @@ var_dec        ::= type_spec:t ID:i SEMI
                   {: RESULT = new SimpleDec(tleft, t, i); :}
                   | type_spec:t ID:i LBRACK NUM:n RBRACK SEMI 
                   {: RESULT = new ArrayDec(tleft, t, i, n); :}
+                  | type_spec:t ID:i 
+                  {: parser.report_error("missing ';'", tleft, tright); 
+                  :}
                   ;
 
 type_spec      ::= BOOL:b 

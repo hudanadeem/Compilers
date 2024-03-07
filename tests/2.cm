@@ -1,8 +1,8 @@
 /* Missing semi colon error */
  
 void main(void) {
-  int x;
+  int x
  
-  x = input()
+  x = input();
   x = x + 1;
 }
