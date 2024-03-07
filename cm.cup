@@ -125,9 +125,9 @@ var_dec        ::= type_spec:t ID:i SEMI
                   {: RESULT = new SimpleDec(tleft, t, i); :}
                   | type_spec:t ID:i LBRACK NUM:n RBRACK SEMI 
                   {: RESULT = new ArrayDec(tleft, t, i, n); :}
-                  | type_spec:t ID:i
-                  {: parser.report_error("Invalid exp", null);
-                     RESULT = new SimpleDec(tleft, null, null); 
+                  | type_spec:t ID:i error 
+                  {: parser.report_error("Missing semi colon", t);
+                     RESULT = new SimpleDec(tleft, t, i); 
                   :}
                   ;
 
