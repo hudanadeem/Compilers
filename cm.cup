@@ -94,7 +94,7 @@ var_dec        ::= type_spec:t ID:i SEMI
                   {: RESULT = new SimpleDec(tleft, t, i); :}
                   | type_spec:t ID:i LBRACK NUM:n RBRACK SEMI 
                   {: RESULT = new ArrayDec(tleft, t, i, n); :}
-                  | type_spec:t ID:i error
+                  | type_spec:t ID:i
                   {: parser.report_error("missing ';'", tleft, tright); 
                   :}
                   ;
