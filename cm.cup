@@ -94,8 +94,8 @@ var_dec        ::= type_spec:t ID:i SEMI
                   {: RESULT = new SimpleDec(tleft, t, i); :}
                   | type_spec:t ID:i LBRACK NUM:n RBRACK SEMI 
                   {: RESULT = new ArrayDec(tleft, t, i, n); :}
-                  | type_spec:t ID:i
-                  {: parser.report_error("missing ';'", tleft, tright); 
+                  | type_spec:t ID:i error:e
+                  {: parser.report_error("missing ';'", tleft, eright); 
                   :}
                   ;
 
@@ -113,6 +113,8 @@ fun_dec        ::= type_spec:t ID:i LPAREN params:p RPAREN compound_stmt:c
 
 fun_prototype  ::= type_spec:t ID:i LPAREN params:p RPAREN:r SEMI 
                   {: RESULT = new FunctionDec(tleft, t, i, p, new NilExp(rright)); :}
+                  // | type_spec:t ID:i LPAREN params:p RPAREN:r error
+                  // {: RESULT = new }
                   ;
 
 params         ::= param_list:p 
