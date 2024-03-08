@@ -3,5 +3,5 @@
 void main(void) {
   int x;
  
-  x = input()
+  x = input();
   x = x + 1;
