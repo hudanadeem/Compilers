@@ -62,7 +62,7 @@ precedence left PLUS, MINUS;
 precedence left TIMES, DIV;
 precedence right UMINUS;
 precedence left ELSE;
-// precedence left SEMI;
+precedence left SEMI;
 
 /* ----------------------------Grammar Section-------------------- */
    
@@ -96,8 +96,8 @@ var_dec        ::= type_spec:t ID:i SEMI
                   {: RESULT = new SimpleDec(tleft, t, i); :}
                   | type_spec:t ID:i LBRACK NUM:n RBRACK SEMI 
                   {: RESULT = new ArrayDec(tleft, t, i, n); :}
-                  | type_spec:t ID:i error:e
-                  {: parser.report_error("missing ';'", eleft, eright); 
+                  | type_spec:t ID:i
+                  {: parser.report_error("missing ';'", ileft, iright); 
                      RESULT = null;
                   :}
                   // | type_spec error:e ID
@@ -120,9 +120,9 @@ fun_dec        ::= type_spec:t ID:i LPAREN params:p RPAREN compound_stmt:c
 
 fun_prototype  ::= type_spec:t ID:i LPAREN params:p RPAREN:r SEMI 
                   {: RESULT = new FunctionDec(tleft, t, i, p, new NilExp(rright)); :}
-                  // | type_spec:t ID:i LPAREN params:p RPAREN:r error:e
-                  // {: parser.report_error("missing ';'", eleft, eright); 
-                  // :}
+                  | type_spec:t ID:i LPAREN params:p RPAREN:r
+                  {: parser.report_error("missing ';'", rleft, rright+1); 
+                  :}
                   ;
 
 params         ::= param_list:p 
@@ -194,11 +194,10 @@ expr_stmt      ::= expr:e SEMI
                   {: RESULT = e; :}
                   | SEMI:s
                   {: RESULT = new NilExp(sleft); :}
-                  // | expr:e error:er
-                  // {: System.out.println(eleft);
-                  //    parser.report_error("missing ';'", erleft, erright); 
-                  //    RESULT = null;
-                  // :}
+                  | expr:e
+                  {: parser.report_error("missing ';'", eleft, eright); 
+                     RESULT = null;
+                  :}
                   ;
 
 select_stmt    ::= IF:i LPAREN expr:e RPAREN stmt:s
@@ -215,10 +214,10 @@ return_stmt    ::= RETURN:r expr:e SEMI
                   {: RESULT = new ReturnExp(rleft, e); :}
                   | RETURN:r SEMI 
                   {: RESULT = new ReturnExp(rleft, new NilExp(rright)); :}
-                  // | RETURN:r expr error:e
-                  // {: parser.report_error("missing ';'", eleft, eright); 
-                  //    RESULT = null;
-                  // :}
+                  | RETURN:r expr
+                  {: parser.report_error("missing ';'", rleft, rright+6); 
+                     RESULT = null;
+                  :}
                   ;
 
 expr           ::= var:v ASSIGN expr:e 
