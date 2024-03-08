@@ -103,6 +103,10 @@ var_dec        ::= type_spec:t ID:i SEMI
                   {: parser.report_error("unexpected token ", tleft, tright); 
                      RESULT = null;
                   :}
+                  | ID:i ID SEMI
+                  {: parser.report_error("invalid type", ileft, iright); 
+                     RESULT = null;
+                  :}
                   ;
 
 type_spec      ::= BOOL:b 

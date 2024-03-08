@@ -1,7 +1,7 @@
-/* Invalid symbol & */
+/* Invalid type spec */
  
 void main(void) {
-  int x;
+  float x;
  
-  x = 2 & 3;
+  x = input;
 }

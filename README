@@ -10,7 +10,7 @@ make
 2. parser:
 
 * no output:
-  java -cp /usr/share/java/cup.jar:. -a CM tests/filename.cm
+  java -cp /usr/share/java/cup.jar:. CM -a tests/filename.cm
 
 * print to terminal:
   java -cp /usr/share/java/cup.jar:. CM tests/filename.cm
