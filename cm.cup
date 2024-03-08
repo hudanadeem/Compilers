@@ -61,8 +61,7 @@ precedence left OR, AND;
 precedence left PLUS, MINUS;
 precedence left TIMES, DIV;
 precedence right UMINUS;
-precedence left ELSE;
-precedence left SEMI;
+precedence left ELSE, SEMI, LPAREN;
 
 /* ----------------------------Grammar Section-------------------- */
    
@@ -100,10 +99,10 @@ var_dec        ::= type_spec:t ID:i SEMI
                   {: parser.report_error("missing ';'", ileft, iright); 
                      RESULT = null;
                   :}
-                  // | type_spec error:e ID
-                  // {: parser.report_error("unexpected token " + e, eleft, eright); 
-                  //    RESULT = null;
-                  // :}
+                  | type_spec type_spec:t ID
+                  {: parser.report_error("unexpected token ", tleft, tright); 
+                     RESULT = null;
+                  :}
                   ;
 
 type_spec      ::= BOOL:b 
@@ -280,6 +279,10 @@ term           ::= term:t TIMES signed_factor:s
                   {: RESULT = new OpExp(tleft, t, OpExp.DIV, s); :}
                   | signed_factor:s
                   {: RESULT = s; :}
+                  // | term AND:a signed_factor
+                  // {: parser.report_error("unexpected token" + a, aleft, aright); 
+                  //    RESULT = null;
+                  // :}
                   ;
 
 signed_factor  ::= MINUS:m signed_factor:s 
