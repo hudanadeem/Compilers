@@ -1,13 +1,8 @@
 /* Missing semi colon error */
  
 void main(void) {
-<<<<<<< HEAD
   int x
  
-=======
-  int x;
-  
->>>>>>> ella-branch
   x = input();
   x = x + 1;
 
