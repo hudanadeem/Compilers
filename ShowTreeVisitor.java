@@ -33,7 +33,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
 
 	public void visit( NilExp exp, int level ) {
 		indent( level );
-		System.out.println( "NilExp: " );
+		// System.out.println( "NilExp: " );
 	}
 
 	public void visit( IntExp exp, int level ) {

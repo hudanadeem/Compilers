@@ -1,0 +1,138 @@
+The abstract syntax tree is:
+ArrayDec: x
+    TypeDec: int
+FunctionDec: minloc
+    TypeDec: int
+    ArrayDec: a
+        TypeDec: int
+    SimpleDec: low
+        TypeDec: int
+    SimpleDec: high
+        TypeDec: int
+    CompoundExp: 
+        SimpleDec: i
+            TypeDec: int
+        SimpleDec: x
+            TypeDec: int
+        SimpleDec: k
+            TypeDec: int
+        AssignExp: 
+            VarExp: k
+            VarExp: low
+        AssignExp: 
+            VarExp: x
+            VarExp: a
+        AssignExp: 
+            VarExp: i
+            OpExp: + 
+                VarExp: low
+                IntExp: 1
+        WhileExp: 
+            OpExp: < 
+                VarExp: i
+                VarExp: high
+            CompoundExp: 
+                IfExp: 
+                    OpExp: < 
+                        VarExp: a
+                        VarExp: x
+                    CompoundExp: 
+                        AssignExp: 
+                            VarExp: x
+                            VarExp: a
+                        AssignExp: 
+                            VarExp: k
+                            VarExp: i
+                    NilExp: 
+                AssignExp: 
+                    VarExp: i
+                    OpExp: + 
+                        VarExp: i
+                        IntExp: 1
+        ReturnExp: 
+            VarExp: k
+FunctionDec: sort
+    TypeDec: void
+    ArrayDec: a
+        TypeDec: int
+    SimpleDec: low
+        TypeDec: int
+    SimpleDec: high
+        TypeDec: int
+    CompoundExp: 
+        SimpleDec: i
+            TypeDec: int
+        SimpleDec: k
+            TypeDec: int
+        AssignExp: 
+            VarExp: i
+            VarExp: low
+        WhileExp: 
+            OpExp: < 
+                VarExp: i
+                OpExp: - 
+                    VarExp: high
+                    IntExp: 1
+            CompoundExp: 
+                SimpleDec: t
+                    TypeDec: int
+                AssignExp: 
+                    VarExp: k
+                    CallExp: minloc
+                        VarExp: a
+                        VarExp: i
+                        VarExp: high
+                AssignExp: 
+                    VarExp: t
+                    VarExp: a
+                AssignExp: 
+                    VarExp: a
+                    VarExp: a
+                AssignExp: 
+                    VarExp: a
+                    VarExp: t
+                AssignExp: 
+                    VarExp: i
+                    OpExp: + 
+                        VarExp: i
+                        IntExp: 1
+FunctionDec: main
+    TypeDec: void
+    CompoundExp: 
+        SimpleDec: i
+            TypeDec: int
+        AssignExp: 
+            VarExp: i
+            IntExp: 0
+        WhileExp: 
+            OpExp: < 
+                VarExp: i
+                IntExp: 10
+            CompoundExp: 
+                AssignExp: 
+                    VarExp: x
+                    CallExp: input
+                AssignExp: 
+                    VarExp: i
+                    OpExp: + 
+                        VarExp: i
+                        IntExp: 1
+        CallExp: sort
+            VarExp: x
+            IntExp: 0
+            IntExp: 10
+        AssignExp: 
+            VarExp: i
+            IntExp: 0
+        WhileExp: 
+            OpExp: < 
+                VarExp: i
+                IntExp: 10
+            CompoundExp: 
+                CallExp: output
+                    VarExp: x
+                AssignExp: 
+                    VarExp: i
+                    OpExp: + 
+                        VarExp: i
+                        IntExp: 1
