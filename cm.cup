@@ -96,7 +96,7 @@ var_dec        ::= type_spec:t ID:i SEMI
                   | type_spec:t ID:i LBRACK NUM:n RBRACK SEMI 
                   {: RESULT = new ArrayDec(tleft, t, i, n); :}
                   | type_spec:t ID:i
-                  {: parser.report_error("missing ';'", ileft, iright); 
+                  {: parser.report_error("expected ';'", ileft, iright); 
                      RESULT = null;
                   :}
                   | type_spec type_spec:t ID
@@ -120,7 +120,7 @@ fun_dec        ::= type_spec:t ID:i LPAREN params:p RPAREN compound_stmt:c
 fun_prototype  ::= type_spec:t ID:i LPAREN params:p RPAREN:r SEMI 
                   {: RESULT = new FunctionDec(tleft, t, i, p, new NilExp(rright)); :}
                   | type_spec:t ID:i LPAREN params:p RPAREN:r
-                  {: parser.report_error("missing ';'", rleft, rright+1); 
+                  {: parser.report_error("expected ';'", rleft, rright+1); 
                   :}
                   ;
 
@@ -153,6 +153,9 @@ compound_stmt  ::= LCURLY:c local_dec:l stmt_list:s RCURLY
                   {: RESULT = new CompoundExp(cleft, new VarDecList(null, null), s); :}
                   | LCURLY:c local_dec:l RCURLY
                   {: RESULT = new CompoundExp(cleft, l, new ExpList(new NilExp(lright), null)); :}
+                  | LCURLY local_dec:l stmt_list:s error:e 
+                  {: parser.report_error("expected '}'", eleft, eright);
+                     RESULT = new CompoundExp(lleft, l, s); :}
                   ;
 
 local_dec      ::= local_dec:l var_dec:v
@@ -194,7 +197,7 @@ expr_stmt      ::= expr:e SEMI
                   | SEMI:s
                   {: RESULT = new NilExp(sleft); :}
                   | expr:e
-                  {: parser.report_error("missing ';'", eleft, eright); 
+                  {: parser.report_error("expected ';'", eleft, eright); 
                      RESULT = null;
                   :}
                   ;
