@@ -7,13 +7,16 @@ Checkpoint One
 1. to compile:
 make
  
-2. to output tree:
+2. parser:
 
-print to terminal:
-java -cp /usr/share/java/cup.jar:. CM tests/filename.cm
+* no output:
+  java -cp /usr/share/java/cup.jar:. -a CM tests/filename.cm
 
-print to outputTree.txt file:
-java -cp /usr/share/java/cup.jar:. CM tests/filename.cm > outputTree.txt
+* print to terminal:
+  java -cp /usr/share/java/cup.jar:. CM tests/filename.cm
+
+* print to outputTree.txt file:
+  java -cp /usr/share/java/cup.jar:. CM tests/filename.cm > outputTree.txt
 
  
 Extra:

@@ -7,11 +7,29 @@ import java.io.*;
 import absyn.*;
    
 class CM {
-  public final static boolean SHOW_TREE = true;
-  static public void main(String argv[]) {    
+  public static boolean SHOW_TREE = true;
+  static public void main(String argv[]) {  
+      
     /* Start the parser */
     try {
-      parser p = new parser(new Lexer(new FileReader(argv[0])));
+
+      /* Set to not print tree if -a flag in command line */
+      String fileName = null;
+      for (int i = 0; i < argv.length; i++) {
+        if (argv[i].equals("-a")) {
+          SHOW_TREE = false;
+        } else {
+          fileName = argv[i];
+          break;
+        }
+      }
+
+      if (fileName == null) {
+        System.out.println("Usage: java CM [-a] <filename>");
+        return;
+      }
+
+      parser p = new parser(new Lexer(new FileReader(fileName)));
       Absyn result = (Absyn)(p.parse().value);      
       if (SHOW_TREE && result != null) {
          System.out.println("The abstract syntax tree is:");

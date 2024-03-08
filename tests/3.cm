@@ -1,7 +1,7 @@
 /* Double type specification in line 4 */
  
 void main(void) {
-  int bool x;
+  float x;
  
   x = input();
   x = x + 1;
