@@ -9,28 +9,31 @@ import absyn.*;
    
 /* Parser code to determine the way the parser reports errors. */
 parser code {:
+   public static boolean parseError = false;
     
     /* Reports syntax error at the col and row */
     public void report_error(String message, int col, int row) {
+         parseError = true;
    
-        /* Create a StringBuffer called 'm' with the string 'Error' in it. */
-        StringBuffer m = new StringBuffer("Error");
-        m.append(" in line "+(col+1)); 
-        m.append(", column "+(row+1));
-   
-        /* Add to the end of the StringBuffer error message created in
-           this method the message that was passed into this method. */
-        m.append(" : "+message);
-   
-        /* Print the contents of the StringBuffer 'm', which contains
-           an error message, out on a line. */
-        System.err.println(m);
+         /* Create a StringBuffer called 'm' with the string 'Error' in it. */
+         StringBuffer m = new StringBuffer("Error");
+         m.append(" in line "+(col+1)); 
+         m.append(", column "+(row+1));
+      
+         /* Add to the end of the StringBuffer error message created in
+            this method the message that was passed into this method. */
+         m.append(" : "+message);
+      
+         /* Print the contents of the StringBuffer 'm', which contains
+            an error message, out on a line. */
+         System.err.println(m);
     }
    
    /* Reports fatal syntax error at col and row and exits system */
     public void report_fatal_error(String message, int col, int row) {
-        report_error(message, col, row);
-        System.exit(1);
+         parseError = true;
+         report_error(message, col, row);
+         System.exit(1);
     }
 
 :};
