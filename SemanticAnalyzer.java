@@ -10,7 +10,7 @@ import java.util.HashMap;
 // import java.util.Iterator;
 import absyn.*;
 
-public class ShowTreeVisitor implements AbsynVisitor {
+public class SemanticAnalyzer implements AbsynVisitor {
 	public static boolean parseError = false;
 
 	private HashMap<String, ArrayList<NodeType>> table;
