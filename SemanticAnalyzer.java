@@ -27,4 +27,17 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
 
+  private void insert(String key, NodeType node) {
+
+    if (table.containsKey(key)) {
+      ArrayList<NodeType> nodeList = table.get(key);
+      nodeList.add(node);
+    }
+    else {
+      ArrayList<NodeType> nodeList = new ArrayList<>();
+      nodeList.add(node);
+      table.put(key, nodeList);
+    }
+  }
+
 }
