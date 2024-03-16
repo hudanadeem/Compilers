@@ -72,22 +72,23 @@ public class SemanticAnalyzer implements AbsynVisitor {
     indent(level);
     System.out.println("Leaving the block");
 
-    indent(level);
-    System.out.println("Entering a new block:");
-
-		if (exp.elseExp != null ) {
+		if (!(exp.elseExp instanceof NilExp)) {
+      indent(level);
+      System.out.println("Entering a new block:");
+      
 			exp.elseExp.accept( this, level+1 );
-		}
 
-    indent(level);
-    System.out.println("Leaving the block");
+      indent(level);
+      System.out.println("Leaving the block");
+		}
   }
 
   public void visit( WhileExp exp, int level ) {
+    exp.test.accept( this, level+1 );
+
     indent(level);
     System.out.println("Entering a new block:");
 
-		exp.test.accept( this, level+1 );
 		exp.body.accept( this, level+1 );
 
     indent(level);
@@ -101,31 +102,32 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( CompoundExp exp, int level ) {
+    exp.exps.accept( this, level );
 		exp.decs.accept( this, level );
-		exp.exps.accept( this, level );
   }
 
   public void visit( FunctionDec exp, int level ) {
+    exp.result.accept( this, level+1 );
+
     indent(level);
     System.out.println("Entering the scope for function " + exp.func + ":");
 
     insert(exp.func, new NodeType(exp.func, exp, level));
     
-		exp.result.accept( this, level+1 );
+    exp.body.accept( this, level+1 );
 		exp.params.accept( this, level+1 );
-		exp.body.accept( this, level+1 );
 
     indent(level);
     System.out.println("Leaving the scope for function " + exp.func);
   }
 
   public void visit( SimpleDec exp, int level ) {
+    exp.typ.accept( this, level );
+
     indent(level);
     System.out.println(exp.name + ":" + type(exp.typ));
 
     insert(exp.name, new NodeType(exp.name, exp, level));
-
-		exp.typ.accept( this, level );
   }
 
   public void visit( ArrayDec exp, int level ) {
