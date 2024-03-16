@@ -37,9 +37,10 @@ class CM {
          result.accept(visitor, 0); 
       }
 
+      System.out.println("The semantic analyzer:");
       AbsynVisitor analyzer = new SemanticAnalyzer();
       result.accept(analyzer, 0);
-      
+
     } catch (Exception e) {
       
       e.printStackTrace();
