@@ -12,6 +12,7 @@ import absyn.*;
 
 public class SemanticAnalyzer implements AbsynVisitor {
 	public static boolean parseError = false;
+  private int level = 0; // 0 represents global scope
 
 	private HashMap<String, ArrayList<NodeType>> table;
 
@@ -22,7 +23,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
   /* vistor methods */
 
   public void visit(NameTy exp, int level ) {
-
+    // print("visiting");
   }
 
   public void visit( SimpleVar exp, int level ) {
@@ -78,15 +79,15 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( FunctionDec exp, int level ) {
-
+    
   }
 
   public void visit( SimpleDec exp, int level ) {
-
+    insert(exp.name, new NodeType(exp.name, exp, level));
   }
 
   public void visit( ArrayDec exp, int level ) {
-
+    insert(exp.name, new NodeType(exp.name, exp, level));
   }
 
   public void visit( DecList exp, int level ) {
@@ -98,7 +99,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( ExpList exp, int level ) {
-    
+
   }
 
 

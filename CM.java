@@ -36,6 +36,10 @@ class CM {
          AbsynVisitor visitor = new ShowTreeVisitor();
          result.accept(visitor, 0); 
       }
+
+      AbsynVisitor analyzer = new SemanticAnalyzer();
+      result.accept(analyzer, 0);
+      
     } catch (Exception e) {
       
       e.printStackTrace();
