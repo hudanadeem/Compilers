@@ -37,9 +37,10 @@ class CM {
          result.accept(visitor, 0); 
       }
 
-      System.out.println("The semantic analyzer:");
+      System.out.println("Entering the global scope:");
       AbsynVisitor analyzer = new SemanticAnalyzer();
-      result.accept(analyzer, 0);
+      result.accept(analyzer, 1);
+      System.out.println("Leaving the global scope");
 
     } catch (Exception e) {
       
