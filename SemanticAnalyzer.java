@@ -4,10 +4,10 @@
   Purpose: Visitor class that maintains symbol tree and performs type checking
 */
 
-
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
-// import java.util.Map;
 import java.util.Iterator;
 import absyn.*;
 
@@ -22,7 +22,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     table = new HashMap<String, ArrayList<NodeType>>();
   }
 
-  /* vistor methods */
+  /******* Vistor Methods *******/
 
   public void visit(NameTy nameTy, int level ) {
   }
@@ -129,15 +129,10 @@ public class SemanticAnalyzer implements AbsynVisitor {
   public void visit( SimpleDec exp, int level ) {
     exp.typ.accept( this, level );
 
-    // indent(level);
-    // System.out.println(exp.name + ":" + type(exp.typ));
-
     insert(exp.name, new NodeType(exp.name, exp, level));
   }
 
   public void visit( ArrayDec exp, int level ) {
-    // indent(level);
-    // System.out.println(exp.name + ":" + type(exp.typ) + "[]");
 
     insert(exp.name, new NodeType(exp.name, exp, level));
   
@@ -173,22 +168,35 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
 
 
-  /* helper methods */
+  /*******  Helper Methods *******/
 
+  /* Prints each variable in specified scope then deletes from table */
   public void leaveScope(int scope) {
 
+    List<SimpleEntry<String, NodeType>> toRemove = new ArrayList<>();
     Iterator<HashMap.Entry<String, ArrayList<NodeType>>> iter = table.entrySet().iterator();
+
+    // Traverse table
     while(iter.hasNext()) {
       HashMap.Entry<String, ArrayList<NodeType>> entry = iter.next();
+
+      // Traverse each ArrayList and only print if in scope
       for (NodeType node: entry.getValue()) {
         if (node.level == scope) {
             indent(scope);
             System.out.println(entry.getKey() + ":" + type(node.def.typ));
+            toRemove.add(new SimpleEntry<>(entry.getKey(), node));
         }
       }
     }
+
+    // Remove items that were printed
+    for (SimpleEntry<String, NodeType> entry : toRemove) {
+        delete(entry.getKey(), entry.getValue());
+    }
   }
 
+  /* Looks up ArrayList with specific key */
   private ArrayList lookup(String key) {
     if (table.containsKey(key)) {
       return table.get(key);
@@ -197,6 +205,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
 
+  /* Insert specified node at specified key in table */
   private void insert(String key, NodeType node) {
 
     if (table.containsKey(key)) {
@@ -210,6 +219,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
 
+  /* Deletes specified node at specified key in table */
   private void delete(String key, NodeType node) {
     if (table.containsKey(key)) {
       ArrayList<NodeType> nodeList = table.get(key);
@@ -221,6 +231,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
 
+  /* Prints indentation based on scope */
   private void indent( int level ) {
 		for ( int i = 0; i < level * SPACES; i++ ) System.out.print( " " );
 	}
