@@ -31,10 +31,15 @@ class CM {
 
       parser p = new parser(new Lexer(new FileReader(fileName)));
       Absyn result = (Absyn)(p.parse().value);      
-      if (SHOW_TREE && result != null) {
-         System.out.println("The abstract syntax tree is:");
-         AbsynVisitor visitor = new ShowTreeVisitor();
-         result.accept(visitor, 0); 
+      if (result != null) {
+        if (SHOW_TREE) {
+          System.out.println("The abstract syntax tree is:");
+          AbsynVisitor visitor = new ShowTreeVisitor();
+          result.accept(visitor, 0); 
+        }
+        
+        SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
+        semanticAnalyzer.analyze(result);
       }
     } catch (Exception e) {
       
