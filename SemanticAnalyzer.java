@@ -7,7 +7,8 @@
 
 import java.util.ArrayList;
 import java.util.HashMap;
-// import java.util.Iterator;
+// import java.util.Map;
+import java.util.Iterator;
 import absyn.*;
 
 public class SemanticAnalyzer implements AbsynVisitor {
@@ -69,6 +70,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
 		exp.then.accept( this, level+1 );
 
+    leaveScope(level+1);
     indent(level);
     System.out.println("Leaving the block");
 
@@ -78,6 +80,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
       
 			exp.elseExp.accept( this, level+1 );
 
+      leaveScope(level+1);
       indent(level);
       System.out.println("Leaving the block");
 		}
@@ -91,6 +94,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
 		exp.body.accept( this, level+1 );
 
+    leaveScope(level+1);
     indent(level);
     System.out.println("Leaving the block");
   }
@@ -107,7 +111,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( FunctionDec exp, int level ) {
-    exp.result.accept( this, level+1 );
+    exp.typ.accept( this, level+1 );
 
     indent(level);
     System.out.println("Entering the scope for function " + exp.func + ":");
@@ -117,6 +121,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     exp.body.accept( this, level+1 );
 		exp.params.accept( this, level+1 );
 
+    leaveScope(level+1);
     indent(level);
     System.out.println("Leaving the scope for function " + exp.func);
   }
@@ -124,15 +129,15 @@ public class SemanticAnalyzer implements AbsynVisitor {
   public void visit( SimpleDec exp, int level ) {
     exp.typ.accept( this, level );
 
-    indent(level);
-    System.out.println(exp.name + ":" + type(exp.typ));
+    // indent(level);
+    // System.out.println(exp.name + ":" + type(exp.typ));
 
     insert(exp.name, new NodeType(exp.name, exp, level));
   }
 
   public void visit( ArrayDec exp, int level ) {
-    indent(level);
-    System.out.println(exp.name + ":" + type(exp.typ) + "[]");
+    // indent(level);
+    // System.out.println(exp.name + ":" + type(exp.typ) + "[]");
 
     insert(exp.name, new NodeType(exp.name, exp, level));
   
@@ -169,6 +174,20 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
 
   /* helper methods */
+
+  public void leaveScope(int scope) {
+
+    Iterator<HashMap.Entry<String, ArrayList<NodeType>>> iter = table.entrySet().iterator();
+    while(iter.hasNext()) {
+      HashMap.Entry<String, ArrayList<NodeType>> entry = iter.next();
+      for (NodeType node: entry.getValue()) {
+        if (node.level == scope) {
+            indent(scope);
+            System.out.println(entry.getKey() + ":" + type(node.def.typ));
+        }
+      }
+    }
+  }
 
   private ArrayList lookup(String key) {
     if (table.containsKey(key)) {

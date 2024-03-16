@@ -162,7 +162,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
 		indent( level );
 		System.out.println( "FunctionDec: " + exp.func );
 		level++;
-		exp.result.accept( this, level );
+		exp.typ.accept( this, level );
 		exp.params.accept( this, level );
 		exp.body.accept( this, level );
 	}

@@ -38,8 +38,9 @@ class CM {
       }
 
       System.out.println("Entering the global scope:");
-      AbsynVisitor analyzer = new SemanticAnalyzer();
+      SemanticAnalyzer analyzer = new SemanticAnalyzer();
       result.accept(analyzer, 1);
+      analyzer.leaveScope(1);
       System.out.println("Leaving the global scope");
 
     } catch (Exception e) {
