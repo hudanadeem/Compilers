@@ -13,9 +13,10 @@ import absyn.*;
 
 public class SemanticAnalyzer implements AbsynVisitor {
 
-	public static boolean parseError = false;
+	// public static boolean parseError = false;
 	private HashMap<String, ArrayList<NodeType>> table;
   final static int SPACES = 4;
+  private int lastVisited = -1;
 
 
   public SemanticAnalyzer() {
@@ -28,25 +29,34 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( SimpleVar simpleVar, int level ) {
+    System.out.println("visiting simpleVar");
   }
 
   public void visit( IndexVar indexVar, int level ) {
+    // if indexVar.index != int, report error where index is an expression
+    System.out.println("visiting indexVar");
   }
 
   public void visit( NilExp exp, int level ) {
   }
 
   public void visit( IntExp exp, int level ) {
+    // exp type = int
   }
 
   public void visit( BoolExp exp, int level ) {
+    // exp type = bool
   }
 
   public void visit( VarExp exp, int level ) {
+    exp.variable.accept( this, level );
+    // exp type = lookup(exp.name)
   }
 
   public void visit( CallExp exp, int level ) {
 		exp.args.accept( this, level );
+
+    // exp type = lookup(exp.func)
   }
 
   public void visit( OpExp exp, int level ) {
@@ -57,13 +67,15 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( AssignExp exp, int level ) {
-
 		exp.lhs.accept( this, level );
 		exp.rhs.accept( this, level );
+
+    // if lhs type != rhs type, report error
   }
 
   public void visit( IfExp exp, int level ) {
 		exp.test.accept( this, level );
+    // if test != bool, report error
 
     indent(level);
     System.out.println("Entering a new block:");
@@ -88,6 +100,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   public void visit( WhileExp exp, int level ) {
     exp.test.accept( this, level+1 );
+    // if type != bool or int, report error
 
     indent(level);
     System.out.println("Entering a new block:");
@@ -103,6 +116,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
 		if (exp.exp != null ) {
 			exp.exp.accept( this, level );
 		}
+
+    // if return type != lookup(function type), report error
   }
 
   public void visit( CompoundExp exp, int level ) {
@@ -130,6 +145,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     exp.typ.accept( this, level );
 
     insert(exp.name, new NodeType(exp.name, exp, level));
+    // if exp type = void, report error
   }
 
   public void visit( ArrayDec exp, int level ) {
@@ -137,6 +153,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     insert(exp.name, new NodeType(exp.name, exp, level));
   
 		exp.typ.accept( this, level );
+    // if exp type = void, report error
   }
 
   public void visit( DecList decList, int level ) {
