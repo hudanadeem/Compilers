@@ -68,9 +68,21 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
     public void visit(CallExp exp, int level) {
 
-        exp.args.accept( this, level );
+        if (exp.args != null) {
+            exp.args.accept(this, level); // This assumes args are processed elsewhere
+        }
+
         // exp type = lookup(exp.func)
         lastVisited = lookup(exp.func);
+        if ("input".equals(exp.func)) {
+            lastVisited = NameTy.INT; // input() returns an integer
+        } else if ("output".equals(exp.func)) {
+        // Assuming you've already checked the argument type in args.accept()
+        // No need to set lastVisited for output as it returns void
+        } else {
+        // Handle other function calls normally
+            lastVisited = lookup(exp.func);
+        }
 
     }
 
@@ -301,23 +313,40 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     public void visit(FunctionDec exp, int level) {
-
-        exp.typ.accept( this, level+1 );
+       
+        String funcReturnType = type(exp.typ); 
+        // Convert NameTy to a string representation ("int", "bool", "void")
 
         indent(level);
-        System.out.println("Entering the scope for function " + exp.func + ":");
+        System.out.println("Entering the scope for function " + exp.func + ": " + funcReturnType);
 
         currentFunc = exp.func;
         insert(exp.func, new NodeType(exp.func, exp, level));
-        
-        exp.params.accept( this, level+1 );
-        exp.body.accept( this, level+1 );
 
-        leaveScope(level+1);
+        // Increment level for parameters and body scope
+        int newLevel = level + 1;
+
+        // Visit parameters, if any
+        if (exp.params != null) {
+            VarDecList params = exp.params;
+            while (params != null) {
+                if (params.head != null) {
+                    params.head.accept(this, newLevel); // This assumes your parameter nodes are visitable in the same way
+                }
+                params = params.tail;
+            }
+        }
+        // Visit the body of the function
+        if (exp.body != null) {
+            exp.body.accept(this, newLevel); // Assuming CompoundExp or similar structure for the body
+        }
+
+        leaveScope(newLevel);
         indent(level);
         System.out.println("Leaving the scope for function " + exp.func);
         currentFunc = "";
     }
+
 
     public void visit(SimpleDec exp, int level) {
 
