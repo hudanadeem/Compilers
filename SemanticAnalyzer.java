@@ -16,15 +16,6 @@ public class SemanticAnalyzer implements AbsynVisitor {
         table = new HashMap<String, ArrayList<NodeType>>();
     }
 
-    // private void enterScope() {
-    //     scopeStack.push(new HashMap<>());
-    //     System.out.println("Entering a new scope");
-    // }
-    // private void leaveScope() {
-    //     scopeStack.pop();
-    //     System.out.println("Leaving the current scope");
-    // }
-
 
     /*Vistor methods*/
 
@@ -77,10 +68,9 @@ public class SemanticAnalyzer implements AbsynVisitor {
         if ("input".equals(exp.func)) {
             lastVisited = NameTy.INT; // input() returns an integer
         } else if ("output".equals(exp.func)) {
-        // Assuming you've already checked the argument type in args.accept()
-        // No need to set lastVisited for output as it returns void
+            lastVisited = NameTy.VOID; // output() is void
         } else {
-        // Handle other function calls normally
+            // For user-defined functions, lookup their return type in the symbol table
             lastVisited = lookup(exp.func);
         }
 
@@ -254,63 +244,100 @@ public class SemanticAnalyzer implements AbsynVisitor {
             report_error("condition for if statement must be of boolean type");
         } 
 
-        indent(level);
-        System.out.println("Entering a new block:");
-
-		exp.then.accept( this, level+1 );
-
-        leaveScope(level+1);
-        indent(level);
-        System.out.println("Leaving the block");
-
-		if (!(exp.elseExp instanceof NilExp)) {
+        boolean thenHasContent = exp.then instanceof CompoundExp && (((CompoundExp) exp.then).decs != null || ((CompoundExp) exp.then).exps != null);
+        if (thenHasContent) {
             indent(level);
             System.out.println("Entering a new block:");
-            
-            exp.elseExp.accept( this, level+1 );
+        }
 
-            leaveScope(level+1);
+        exp.then.accept(this, level + 1);
+
+        if (thenHasContent) {
             indent(level);
             System.out.println("Leaving the block");
-		}
+        }
 
-    }
+        if (exp.elseExp != null && !(exp.elseExp instanceof NilExp)) {
+            boolean elseHasContent = exp.elseExp instanceof CompoundExp && (((CompoundExp) exp.elseExp).decs != null || ((CompoundExp) exp.elseExp).exps != null);
+            if (elseHasContent) {
+                indent(level);
+                System.out.println("Entering a new block:");
+            }
+
+            exp.elseExp.accept(this, level + 1);
+
+            if (elseHasContent) {
+                indent(level);
+                System.out.println("Leaving the block");
+            }
+        }
+}
 
     public void visit(WhileExp exp, int level) {
-
-        exp.test.accept( this, level+1 );
-        // if type != bool or int, report error
+        exp.test.accept(this, level + 1);
         if (!isInt(lastVisited) && !isBool(lastVisited)) {
-        report_error("condition for while expression must be of boolean type");
+            report_error("condition for while expression must be of boolean type");
         }
 
-        indent(level);
-        System.out.println("Entering a new block:");
+        boolean bodyHasContent = exp.body instanceof CompoundExp && (((CompoundExp) exp.body).decs != null || ((CompoundExp) exp.body).exps != null);
+        if (bodyHasContent) {
+            indent(level);
+            System.out.println("Entering a new block:");
+        }
 
-		exp.body.accept( this, level+1 );
+        exp.body.accept(this, level + 1);
 
-        leaveScope(level+1);
-        indent(level);
-        System.out.println("Leaving the block");
+        if (bodyHasContent) {
+            indent(level);
+            System.out.println("Leaving the block");
+        }
     }
+
 
     public void visit(ReturnExp exp, int level) {
-
-        if (exp.exp != null ) {
-			exp.exp.accept( this, level );
-		}
-
-        // if return type != lookup(function type), report error
-        if (lastVisited != lookup(currentFunc)) {
-            report_error("incompatable return type for function " + currentFunc);
+        // Check if there is an expression to return
+        if (exp.exp != null) {
+            exp.exp.accept(this, level);  // Visit the return expression to determine its type
         }
+
+        // Lookup the expected return type for the current function
+        int expectedReturnType = lookup(currentFunc);  // This assumes currentFunc is correctly set to the name of the currently visited function
+        if (expectedReturnType == -1) {
+            // Handle error: Function not found in the table. This shouldn't normally happen if the table is maintained correctly.
+            report_error("Function '" + currentFunc + "' not found in symbol table");
+        } else if (exp.exp != null && lastVisited != expectedReturnType) {
+            // If there's a return expression and its type doesn't match the function's declared return type, report an error
+            report_error("Incompatible return type for function '" + currentFunc + "'");
+        }
+        // If exp.exp is null, this would mean a 'return;' statement in a void function, which should be compatible with a void return type
+        // assuming your implementation sets `lastVisited` correctly in `visit(IntExp exp, int level)` and other visit methods for expressions.
     }
+
 
 
     public void visit(CompoundExp exp, int level) {
-        exp.decs.accept( this, level );
-        exp.exps.accept( this, level );
+        // Check if there are any declarations or expressions
+        boolean hasContent = (exp.decs != null && exp.decs.head != null) || (exp.exps != null && exp.exps.head != null);
+        
+        if (hasContent) {
+            indent(level);
+            System.out.println("Entering a new block:");
+        }
+        
+        if (exp.decs != null) {
+            exp.decs.accept(this, level);
+        }
+        
+        if (exp.exps != null) {
+            exp.exps.accept(this, level);
+        }
+        
+        if (hasContent) {
+            indent(level);
+            System.out.println("Leaving the block");
+        }
     }
+
 
     public void visit(FunctionDec exp, int level) {
        
