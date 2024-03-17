@@ -59,20 +59,9 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
     public void visit(CallExp exp, int level) {
 
-        if (exp.args != null) {
-            exp.args.accept(this, level); // This assumes args are processed elsewhere
-        }
-
+        exp.args.accept( this, level );
         // exp type = lookup(exp.func)
         lastVisited = lookup(exp.func);
-        if ("input".equals(exp.func)) {
-            lastVisited = NameTy.INT; // input() returns an integer
-        } else if ("output".equals(exp.func)) {
-            lastVisited = NameTy.VOID; // output() is void
-        } else {
-            // For user-defined functions, lookup their return type in the symbol table
-            lastVisited = lookup(exp.func);
-        }
 
     }
 
@@ -244,136 +233,82 @@ public class SemanticAnalyzer implements AbsynVisitor {
             report_error("condition for if statement must be of boolean type");
         } 
 
-        boolean thenHasContent = exp.then instanceof CompoundExp && (((CompoundExp) exp.then).decs != null || ((CompoundExp) exp.then).exps != null);
-        if (thenHasContent) {
+        indent(level);
+        System.out.println("Entering a new block:");
+
+		exp.then.accept( this, level+1 );
+
+        leaveScope(level+1);
+        indent(level);
+        System.out.println("Leaving the block");
+
+		if (!(exp.elseExp instanceof NilExp)) {
             indent(level);
             System.out.println("Entering a new block:");
-        }
+            
+            exp.elseExp.accept( this, level+1 );
 
-        exp.then.accept(this, level + 1);
-
-        if (thenHasContent) {
+            leaveScope(level+1);
             indent(level);
             System.out.println("Leaving the block");
-        }
+		}
 
-        if (exp.elseExp != null && !(exp.elseExp instanceof NilExp)) {
-            boolean elseHasContent = exp.elseExp instanceof CompoundExp && (((CompoundExp) exp.elseExp).decs != null || ((CompoundExp) exp.elseExp).exps != null);
-            if (elseHasContent) {
-                indent(level);
-                System.out.println("Entering a new block:");
-            }
-
-            exp.elseExp.accept(this, level + 1);
-
-            if (elseHasContent) {
-                indent(level);
-                System.out.println("Leaving the block");
-            }
-        }
-}
+    }
 
     public void visit(WhileExp exp, int level) {
-        exp.test.accept(this, level + 1);
+
+        exp.test.accept( this, level+1 );
+        // if type != bool or int, report error
         if (!isInt(lastVisited) && !isBool(lastVisited)) {
-            report_error("condition for while expression must be of boolean type");
+        report_error("condition for while expression must be of boolean type");
         }
 
-        boolean bodyHasContent = exp.body instanceof CompoundExp && (((CompoundExp) exp.body).decs != null || ((CompoundExp) exp.body).exps != null);
-        if (bodyHasContent) {
-            indent(level);
-            System.out.println("Entering a new block:");
-        }
+        indent(level);
+        System.out.println("Entering a new block:");
 
-        exp.body.accept(this, level + 1);
+		exp.body.accept( this, level+1 );
 
-        if (bodyHasContent) {
-            indent(level);
-            System.out.println("Leaving the block");
-        }
+        leaveScope(level+1);
+        indent(level);
+        System.out.println("Leaving the block");
     }
-
 
     public void visit(ReturnExp exp, int level) {
-        // Check if there is an expression to return
-        if (exp.exp != null) {
-            exp.exp.accept(this, level);  // Visit the return expression to determine its type
-        }
 
-        // Lookup the expected return type for the current function
-        int expectedReturnType = lookup(currentFunc);  // This assumes currentFunc is correctly set to the name of the currently visited function
-        if (expectedReturnType == -1) {
-            // Handle error: Function not found in the table. This shouldn't normally happen if the table is maintained correctly.
-            report_error("Function '" + currentFunc + "' not found in symbol table");
-        } else if (exp.exp != null && lastVisited != expectedReturnType) {
-            // If there's a return expression and its type doesn't match the function's declared return type, report an error
-            report_error("Incompatible return type for function '" + currentFunc + "'");
+        if (exp.exp != null ) {
+			exp.exp.accept( this, level );
+		}
+
+        // if return type != lookup(function type), report error
+        if (lastVisited != lookup(currentFunc)) {
+            report_error("incompatable return type for function " + currentFunc);
         }
-        // If exp.exp is null, this would mean a 'return;' statement in a void function, which should be compatible with a void return type
-        // assuming your implementation sets `lastVisited` correctly in `visit(IntExp exp, int level)` and other visit methods for expressions.
     }
-
 
 
     public void visit(CompoundExp exp, int level) {
-        // Check if there are any declarations or expressions
-        boolean hasContent = (exp.decs != null && exp.decs.head != null) || (exp.exps != null && exp.exps.head != null);
-        
-        if (hasContent) {
-            indent(level);
-            System.out.println("Entering a new block:");
-        }
-        
-        if (exp.decs != null) {
-            exp.decs.accept(this, level);
-        }
-        
-        if (exp.exps != null) {
-            exp.exps.accept(this, level);
-        }
-        
-        if (hasContent) {
-            indent(level);
-            System.out.println("Leaving the block");
-        }
+        exp.decs.accept( this, level );
+        exp.exps.accept( this, level );
     }
 
-
     public void visit(FunctionDec exp, int level) {
-       
-        String funcReturnType = type(exp.typ); 
-        // Convert NameTy to a string representation ("int", "bool", "void")
+
+        exp.typ.accept( this, level+1 );
 
         indent(level);
-        System.out.println("Entering the scope for function " + exp.func + ": " + funcReturnType);
+        System.out.println("Entering the scope for function " + exp.func + ":");
 
         currentFunc = exp.func;
         insert(exp.func, new NodeType(exp.func, exp, level));
+        
+        exp.params.accept( this, level+1 );
+        exp.body.accept( this, level+1 );
 
-        // Increment level for parameters and body scope
-        int newLevel = level + 1;
-
-        // Visit parameters, if any
-        if (exp.params != null) {
-            VarDecList params = exp.params;
-            while (params != null) {
-                if (params.head != null) {
-                    params.head.accept(this, newLevel); // This assumes your parameter nodes are visitable in the same way
-                }
-                params = params.tail;
-            }
-        }
-        // Visit the body of the function
-        if (exp.body != null) {
-            exp.body.accept(this, newLevel); // Assuming CompoundExp or similar structure for the body
-        }
-
-        leaveScope(newLevel);
+        leaveScope(level+1);
         indent(level);
         System.out.println("Leaving the scope for function " + exp.func);
         currentFunc = "";
     }
-
 
     public void visit(SimpleDec exp, int level) {
 
