@@ -298,8 +298,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
     currentFunc = exp.func;
     insert(exp.func, new NodeType(exp.func, exp, level));
     
+    exp.params.accept( this, level+1 );
     exp.body.accept( this, level+1 );
-		exp.params.accept( this, level+1 );
 
     leaveScope(level+1);
     indent(level);
