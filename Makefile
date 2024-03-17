@@ -9,7 +9,7 @@ CUP=cup
 
 all: CM.class
 
-CM.class: absyn/*.java parser.java sym.java Lexer.java ShowTreeVisitor.java Scanner.java SemanticAnalyzer.java CM.java
+CM.class: absyn/*.java parser.java sym.java Lexer.java ShowTreeVisitor.java Scanner.java SemanticAnalyzer.java NodeType.java CM.java
 
 %.class: %.java
 	$(JAVAC) $(CLASSPATH) $^
