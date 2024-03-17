@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.ArrayDeque;
+
 import java.util.HashMap;
 // import java.util.Iterator;
 import absyn.*;
@@ -7,179 +9,151 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
 	public static boolean parseError = false;
 	private HashMap<String, ArrayList<NodeType>> table;
+    private Deque<HashMap<String, ArrayList<NodeType>>> scopeStack = new ArrayDeque<>();
+
 
     public SemanticAnalyzer() {
         table = new HashMap<>();
     }
-    public void analyze(Absyn root) {
-        root.accept(this, 0);
+
+    private void enterScope() {
+        scopeStack.push(new HashMap<>());
+        System.out.println("Entering a new scope");
+    }
+    private void leaveScope() {
+        scopeStack.pop();
+        System.out.println("Leaving the current scope");
+    }
+
+
+    // private void addDecToTable(String name, Dec def, int level) {
+    //     HashMap<String, ArrayList<NodeType>> currentScope = scopeStack.peek();
+    //     if (currentScope == null) {
+    //         enterScope(); // Ensure there's at least one scope
+    //         currentScope = scopeStack.peek();
+    //     }
+    //     ArrayList<NodeType> defs = currentScope.getOrDefault(name, new ArrayList<>());
+    //     defs.add(new NodeType(name, def, level));
+    //     currentScope.put(name, defs);
+    //     // Example output
+    //     System.out.println(name + ": " + getTypeName(def) + " // Assuming getTypeName(Dec) returns the type as a String");
+    // }
+    
+    @Override
+    public void visit(NameTy exp, int level) {
     }
 
     @Override
-    public void visit(NameTy exp, int level) {
-        // Potentially perform type-related checks here, but no symbol table actions needed.
-    }
-    @Override
     public void visit(SimpleVar exp, int level) {
-        // Check if the variable has been declared.
-        if (!isDeclared(exp.name, level)) {
-            System.err.println("Semantic Error: Variable '" + exp.name + "' has not been declared.");
-        } else {
-            System.out.println("Accessed SimpleVar: " + exp.name + " at level " + level);
+
+        ArrayList<NodeType> list = table.get(exp.name);
+        if (list == null || list.isEmpty()) {
+            System.out.println("Semantic Error: Variable " + exp.name + " is not declared.");
+            parseError = true;
+            return;
         }
+
+        // Now this line should work since dtype exists in SimpleVar
+        exp.dtype = list.get(list.size() - 1).def; // Assuming the last one is the current scope.
     }
+
+
 
     @Override
     public void visit(IndexVar exp, int level) {
-        // Check if the array variable has been declared.
-        if (!isDeclared(exp.name, level)) {
-            System.err.println("Semantic Error: Array '" + exp.name + "' has not been declared.");
-        } else {
-            System.out.println("Accessed IndexVar: " + exp.name + " at level " + level);
-        }
-    }
 
-    private boolean isDeclared(String name, int level) {
-        ArrayList<NodeType> declarations = table.get(name);
-        if (declarations == null) return false;
-        // Check for a declaration at this or a higher (outer) scope level.
-        return declarations.stream().anyMatch(nt -> nt.level <= level);
     }
 
 
     @Override
     public void visit(NilExp exp, int level) {
-       
-    }
-    @Override
-    public void visit(IntExp exp, int level) {
-        
     }
 
     @Override
+    public void visit(IntExp exp, int level) {
+
+    }
+
+
+    @Override
     public void visit(BoolExp exp, int level) {
-        
     }
     @Override
     public void visit(VarExp exp, int level) {
-        
+
     }
 
     @Override
     public void visit(CallExp exp, int level) {
-        ArrayList<NodeType> types = table.getOrDefault(exp.name, new ArrayList<>());
-        types.add(new NodeType(exp.name, exp, level));
-        table.put(exp.name, types);
-        System.out.println("Added CallExp to table: " + exp.name + " at level " + level);
+
     }
+
     @Override
     public void visit(OpExp exp, int level) {
-        ArrayList<NodeType> types = table.getOrDefault(exp.name, new ArrayList<>());
-        types.add(new NodeType(exp.name, exp, level));
-        table.put(exp.name, types);
-        System.out.println("Added OpExp to table: " + exp.name + " at level " + level);
+
     }
 
     @Override
     public void visit(AssignExp exp, int level) {
-        ArrayList<NodeType> types = table.getOrDefault(exp.name, new ArrayList<>());
-        types.add(new NodeType(exp.name, exp, level));
-        table.put(exp.name, types);
-        System.out.println("Added AssignExp to table: " + exp.name + " at level " + level);
+
     }
+
     @Override
     public void visit(IfExp exp, int level) {
-        ArrayList<NodeType> types = table.getOrDefault(exp.name, new ArrayList<>());
-        types.add(new NodeType(exp.name, exp, level));
-        table.put(exp.name, types);
-        System.out.println("Added IfExp to table: " + exp.name + " at level " + level);
+
     }
+
 
     @Override
     public void visit(WhileExp exp, int level) {
-        ArrayList<NodeType> types = table.getOrDefault(exp.name, new ArrayList<>());
-        types.add(new NodeType(exp.name, exp, level));
-        table.put(exp.name, types);
-        System.out.println("Added WhileExp to table: " + exp.name + " at level " + level);
-    }
-    @Override
-    public void visit(ReturnExp exp, int level) {
-        ArrayList<NodeType> types = table.getOrDefault(exp.name, new ArrayList<>());
-        types.add(new NodeType(exp.name, exp, level));
-        table.put(exp.name, types);
-        System.out.println("Added ReturnExp to table: " + exp.name + " at level " + level);
     }
 
     @Override
-    public void visit(CompoundExp exp, int level) {
-        ArrayList<NodeType> types = table.getOrDefault(exp.name, new ArrayList<>());
-        types.add(new NodeType(exp.name, exp, level));
-        table.put(exp.name, types);
-        System.out.println("Added CompoundExp to table: " + exp.name + " at level " + level);
+    public void visit(ReturnExp exp, int level) {
     }
+
+
+    @Override
+    public void visit(CompoundExp exp, int level) {
+
+    }
+
     @Override
     public void visit(FunctionDec exp, int level) {
-        // Similar logic as for SimpleDec
-        ArrayList<NodeType> list = table.get(exp.func);
-        if (list != null) {
-            for (NodeType nt : list) {
-                if (nt.level == level) {
-                    System.err.println("Semantic Error: Function '" + exp.func + "' is already defined in this scope.");
-                    return;
-                }
-            }
-        }
-        list = table.computeIfAbsent(exp.func, k -> new ArrayList<>());
-        list.add(new NodeType(exp.func, exp, level));
-        System.out.println("Added function declaration to table: " + exp.func + " at level " + level);
+        enterScope();
+
+
+        leaveScope();
+
     }
 
     @Override
     public void visit(SimpleDec exp, int level) {
-        // Check if the variable is already declared in the current scope
         ArrayList<NodeType> list = table.get(exp.name);
-        if (list != null) {
-            for (NodeType nt : list) {
-                if (nt.level == level) {
-                    System.err.println("Semantic Error: Variable '" + exp.name + "' is already defined in this scope.");
-                    return;
-                }
-            }
+        if (list == null) {
+            list = new ArrayList<>();
+            table.put(exp.name, list);
         }
-        // Add the new declaration to the symbol table
-        list = table.computeIfAbsent(exp.name, k -> new ArrayList<>());
         list.add(new NodeType(exp.name, exp, level));
-        System.out.println("Added variable declaration to table: " + exp.name + " at level " + level);
     }
+
+
     @Override
     public void visit(ArrayDec exp, int level) {
-        ArrayList<NodeType> types = table.getOrDefault(exp.name, new ArrayList<>());
-        types.add(new NodeType(exp.name, exp, level));
-        table.put(exp.name, types);
-        System.out.println("Added ArrayDec to table: " + exp.name + " at level " + level);
     }
+
 
     @Override
     public void visit(DecList exp, int level) {
-        ArrayList<NodeType> types = table.getOrDefault(exp.name, new ArrayList<>());
-        types.add(new NodeType(exp.name, exp, level));
-        table.put(exp.name, types);
-        System.out.println("Added DecList to table: " + exp.name + " at level " + level);
-    }
-    @Override
-    public void visit(VarDecList exp, int level) {
-        ArrayList<NodeType> types = table.getOrDefault(exp.name, new ArrayList<>());
-        types.add(new NodeType(exp.name, exp, level));
-        table.put(exp.name, types);
-        System.out.println("Added VarDeclist to table: " + exp.name + " at level " + level);
     }
 
     @Override
+    public void visit(VarDecList exp, int level) {
+    }
+
+
+    @Override
     public void visit(ExpList exp, int level) {
-        ArrayList<NodeType> types = table.getOrDefault(exp.name, new ArrayList<>());
-        types.add(new NodeType(exp.name, exp, level));
-        table.put(exp.name, types);
-        System.out.println("Added ExpList to table: " + exp.name + " at level " + level);
     }
 
 }
