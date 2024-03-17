@@ -31,7 +31,6 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   public void visit( SimpleVar simpleVar, int level ) {
     lastVisited = lookup(simpleVar.name);
-    System.out.println("Simple var type: " + lastVisited + ", " + lookup(simpleVar.name));
     // check if it has been declared
   }
 
@@ -125,7 +124,6 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			  break;
 
 			case OpExp.EQ:
-        System.out.println("left " + ltype + " right " + rtype );
         if ((ltype != rtype) || isVoid(ltype) || isVoid(rtype)) {
           report_error("incompatable operands for boolean expression '=='");
         }
@@ -287,8 +285,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( CompoundExp exp, int level ) {
+    exp.decs.accept( this, level );
     exp.exps.accept( this, level );
-		exp.decs.accept( this, level );
   }
 
   public void visit( FunctionDec exp, int level ) {
@@ -298,7 +296,6 @@ public class SemanticAnalyzer implements AbsynVisitor {
     System.out.println("Entering the scope for function " + exp.func + ":");
 
     currentFunc = exp.func;
-
     insert(exp.func, new NodeType(exp.func, exp, level));
     
     exp.body.accept( this, level+1 );
