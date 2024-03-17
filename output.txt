@@ -2,12 +2,12 @@ Entering the global scope:
     Entering the scope for function gcd: int
         Entering a new block:
         Leaving the block
+        Entering a new block:
+        Leaving the block
         u:int
         v:int
     Leaving the scope for function gcd
     Entering the scope for function main: void
-        Entering a new block:
-        Leaving the block
         x:int
         y:int
     Leaving the scope for function main
