@@ -470,8 +470,10 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
             if(node.def instanceof FunctionDec){
 
-              // System.out.print(entry.getKey() + ":" + type(node.def.typ));
-              System.out.print(entry.getKey() + ":" + "(" +type(node.def.typ) + ")" + " -> " + type(node.def.typ) + "\n");
+              FunctionDec funcDec = (FunctionDec) node.def;
+              String returnType = type(funcDec.typ); 
+              String paramTypes = "void"; 
+              System.out.print(entry.getKey() + ":" + "(" + paramTypes + ")" + " -> " + returnType + "\n");
             }else{
             
             System.out.print(entry.getKey() + ":" + type(node.def.typ));
