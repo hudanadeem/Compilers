@@ -83,6 +83,11 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
     // Set current node type to function type
     lastVisited = lookup(exp.func);
+
+    // Check if function being called has been declared
+    if (lastVisited == -1) {
+      report_error("function '" + exp.func + "' cannot be called because it is undefined");
+    }
   }
 
   public void visit( OpExp exp, int level ) {
