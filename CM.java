@@ -25,17 +25,18 @@ class CM {
             Absyn result = (Absyn) (p.parse().value);
             if (result != null) {
                 if (showTree) {
+                    //tree
                     System.out.println("The abstract syntax tree is:");
                     AbsynVisitor visitor = new ShowTreeVisitor();
                     result.accept(visitor, 0); 
-                    // Perform semantic analysis
+                    // analysis
                     System.out.println("Entering the global scope:");
                     SemanticAnalyzer analyzer = new SemanticAnalyzer();
                     result.accept(analyzer, 1);
                     analyzer.leaveScope(1);
                     System.out.println("Leaving the global scope");
                 } else {
-                    // Only generate and save the syntax tree to an output file
+                    // Only tree to an output file
                     String outputFileName = inputFileName.substring(0, inputFileName.lastIndexOf('.')) + ".abs";
                     File outputFile = new File(outputFileName);
                     PrintStream fileOut = new PrintStream(new FileOutputStream(outputFile));
