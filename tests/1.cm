@@ -1,3 +1,4 @@
+/*Program 1.cm should compile without errors*/
 int i;
 int j;
 
