@@ -15,8 +15,11 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
 	private HashMap<String, ArrayList<NodeType>> table;
   final static int SPACES = 4;
+
+  /* tracking variables */
   private int lastVisited = -1;   // represents type of current node
-  private String currentFunc = "";
+  private String currentFunc = "";  // keeps track of current function
+  private boolean isArr = false;    // keeps track of whether exp node is equivalent to array or simple
 
 
   public SemanticAnalyzer() {
@@ -37,11 +40,18 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   public void visit( SimpleVar simpleVar, int level ) {
     
-    lastVisited = lookup(simpleVar.name);
+    lastVisited = lookupType(simpleVar.name);
     
     // Check if variable has been declared
     if (lastVisited == -1) {
       report_error(simpleVar.pos, "variable '" + simpleVar.name + "' undefined");
+    }
+
+    if (isArray(lookupNode(simpleVar.name))) {
+      isArr = true;
+    }
+    else {
+      isArr = false;
     }
   }
 
@@ -49,16 +59,18 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
     // Check if array index is integer
     indexVar.index.accept( this, level );
-    if (!isInt(lastVisited)) {
+    if (!isInt(lastVisited, isArr)) {
       report_error(indexVar.pos, "array index must be an integer");
     }
 
-    lastVisited = lookup(indexVar.name);
+    lastVisited = lookupType(indexVar.name);
 
     // Check if variable has been declared
     if (lastVisited == -1) {
       report_error(indexVar.pos, "variable '" + indexVar.name + "' undefined");
     }
+
+    isArr = false;
   }
 
   public void visit( NilExp exp, int level ) {
@@ -67,11 +79,13 @@ public class SemanticAnalyzer implements AbsynVisitor {
   public void visit( IntExp exp, int level ) {
     // Set current node type to int
     lastVisited = NameTy.INT;
+    isArr = false;
   }
 
   public void visit( BoolExp exp, int level ) {
     // Set current node type to bool
     lastVisited = NameTy.BOOL;
+    isArr = false;
   }
 
   public void visit( VarExp exp, int level ) {
@@ -82,7 +96,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 		exp.args.accept( this, level );
 
     // Set current node type to function type
-    lastVisited = lookup(exp.func);
+    lastVisited = lookupType(exp.func);
 
     // Check if function being called has been declared
     if (lastVisited == -1) {
@@ -92,23 +106,26 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   public void visit( OpExp exp, int level ) {
     int ltype = -1, rtype = -1;
+    boolean leftIsArr = false, rightIsArr = false;
 
     // Set type of left operand
 		if (exp.left != null) {
 			 exp.left.accept( this, level );
     }
     ltype = lastVisited;
+    leftIsArr = isArr;
 
     // Set type of right operand
 		if (exp.right != null) {
 			 exp.right.accept( this, level );
     }
     rtype = lastVisited;
+    rightIsArr = isArr;
     
     switch( exp.op ) {
 
 			case OpExp.PLUS:
-			  if (!isInt(ltype) || !isInt(rtype)) {
+			  if (!isInt(ltype, leftIsArr) || !isInt(rtype, rightIsArr)) {
           report_error(exp.pos, "operands for addition must be integers");
         }
         else {
@@ -117,7 +134,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			  break;
 
 			case OpExp.MINUS:
-        if (!isInt(ltype) || !isInt(rtype)) {
+        if (!isInt(ltype, leftIsArr) || !isInt(rtype, rightIsArr)) {
           report_error(exp.pos, "operands for subtraction must be integers");
         }
         else {
@@ -126,7 +143,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			  break;
 
 			case OpExp.TIMES:
-        if (!isInt(ltype) || !isInt(rtype)) {
+        if (!isInt(ltype, leftIsArr) || !isInt(rtype, rightIsArr)) {
           report_error(exp.pos, "operands for multiplication must be integers");
         }
         else {
@@ -135,7 +152,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			  break;
 
 			case OpExp.DIV:
-        if (!isInt(ltype) || !isInt(rtype)) {
+        if (!isInt(ltype, leftIsArr) || !isInt(rtype, rightIsArr)) {
           report_error(exp.pos, "operands for division must be integers");
         }
         else {
@@ -144,7 +161,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			  break;
 
 			case OpExp.EQ:
-        if ((ltype != rtype) || isVoid(ltype) || isVoid(rtype)) {
+        if ((ltype != rtype) || leftIsArr != rightIsArr || isVoid(ltype) || isVoid(rtype)) {
           report_error(exp.pos, "incompatable operands for boolean expression '=='");
         }
         else {
@@ -153,7 +170,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			  break;
 
 			case OpExp.NE:
-			  if ((ltype != rtype) || isVoid(ltype) || isVoid(rtype)) {
+			  if ((ltype != rtype) || leftIsArr != rightIsArr || isVoid(ltype) || isVoid(rtype)) {
           report_error(exp.pos, "incompatable operands for boolean expression '!='");
         }
         else {
@@ -162,7 +179,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			  break;
 
 			case OpExp.LT:
-			  if (!isInt(ltype) || !isInt(rtype)) {
+			  if (!isInt(ltype, leftIsArr) || !isInt(rtype, rightIsArr)) {
           report_error(exp.pos, "incompatable operands for boolean expression '<'");
         }
         else {
@@ -171,7 +188,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			  break;
 
 			case OpExp.LTE:
-        if (!isInt(ltype) || !isInt(rtype)) {
+        if (!isInt(ltype, leftIsArr) || !isInt(rtype, rightIsArr)) {
           report_error(exp.pos, "incompatable operands for boolean expression '<='");
         }
         else {
@@ -180,7 +197,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			  break;
 
 			case OpExp.GT:
-        if (!isInt(ltype) || !isInt(rtype)) {
+        if (!isInt(ltype, leftIsArr) || !isInt(rtype, rightIsArr)) {
           report_error(exp.pos, "incompatable operands for boolean expression '>'");
         }
         else {
@@ -189,7 +206,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			  break;
 
 			case OpExp.GTE:
-        if (!isInt(ltype) || !isInt(rtype)) {
+        if (!isInt(ltype, leftIsArr) || !isInt(rtype, rightIsArr)) {
           report_error(exp.pos, "incompatable operands for boolean expression '>='");
         }
         else {
@@ -198,7 +215,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			  break;
 
 			case OpExp.NOT:
-        if (!isBool(rtype)) {
+        if (!isBool(rtype, rightIsArr)) {
           report_error(exp.pos, "incompatable operands for boolean expression '~'");
         }
         else {
@@ -207,7 +224,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			  break;
 
 			case OpExp.AND:
-        if (!isBool(ltype) || !isBool(rtype)) {
+        if (!isBool(ltype, leftIsArr) || !isBool(rtype, rightIsArr)) {
           report_error(exp.pos, "incompatable operands for boolean expression '&&'");
         }
         else {
@@ -216,7 +233,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			  break;
 
 			case OpExp.OR:
-        if (!isBool(ltype) || !isBool(rtype)) {
+        if (!isBool(ltype, leftIsArr) || !isBool(rtype, rightIsArr)) {
           report_error(exp.pos, "incompatable operands for boolean expression '||'");
         }
         else {
@@ -225,7 +242,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			  break;
 
 			case OpExp.UMINUS:
-        if (!isInt(rtype)) {
+        if (!isInt(rtype, rightIsArr)) {
           report_error(exp.pos, "operand must be of type integer");
         }
         else {
@@ -255,7 +272,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 		exp.test.accept( this, level );
 
     // Check that condition is of boolean type 
-    if (!isBool(lastVisited)) {
+    if (!isBool(lastVisited, isArr)) {
       report_error(exp.pos, "condition for if statement must be of boolean type");
     } 
 
@@ -286,7 +303,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     exp.test.accept( this, level+1 );
     
     // Check condition is of type boolean or integer
-    if (!isInt(lastVisited) && !isBool(lastVisited)) {
+    if (!isInt(lastVisited, isArr) && !isBool(lastVisited, isArr)) {
       report_error(exp.pos, "condition for while expression must be of boolean type");
     }
 
@@ -306,7 +323,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 		}
 
     // Check that return type matches function type
-    if (lastVisited != lookup(currentFunc)) {
+    if (lastVisited != lookupType(currentFunc)) {
       report_error(exp.pos, "incompatable return type for function " + currentFunc);
     }
   }
@@ -388,13 +405,13 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   /* Returns true if type is integer */
-  private boolean isInt(int type) {
-    return (type == NameTy.INT);
+  private boolean isInt(int type, boolean arr) {
+    return (type == NameTy.INT) && !arr;
   }
 
   /* Returns true if type is boolean */
-  private boolean isBool(int type) {
-    return (type == NameTy.BOOL);
+  private boolean isBool(int type, boolean arr) {
+    return (type == NameTy.BOOL) && !arr;
   }
 
   /* Returns true if type is void */
@@ -438,13 +455,24 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   /* Looks up type of variable with identifier key */
-  private int lookup(String key) {
+  private int lookupType(String key) {
     if (table.containsKey(key)) {
       ArrayList<NodeType> id = table.get(key);
       NodeType recent = id.get(id.size() - 1);
       return recent.def.typ.typ;
     } else {
       return -1;
+    }
+  }
+
+  /* Looks up node with identifier key */
+  private NodeType lookupNode(String key) {
+    if (table.containsKey(key)) {
+      ArrayList<NodeType> id = table.get(key);
+      NodeType recent = id.get(id.size() - 1);
+      return recent;
+    } else {
+      return null;
     }
   }
 
