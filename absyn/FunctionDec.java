@@ -2,7 +2,10 @@ package absyn;
 
 public class FunctionDec extends Dec {
 	public int pos;
+<<<<<<< HEAD
 	//public NameTy result;
+=======
+>>>>>>> ella-branch
 	public String func;
 	public VarDecList params;
 	public Exp body;

@@ -2,27 +2,25 @@ Isabella McIvor (1101334)
 Huda Nadeem (11439431)
 Zuya Abro (1109843)
  
-Checkpoint One
+Checkpoint Two
+--------------
  
-1. to compile:
+1. Compiling:
 make
  
-2. parser:
+2. Running:
 
 * syntax tree in test folder (filename.abs):
   java -cp /usr/share/java/cup.jar:. CM -a tests/filename.cm
 
-* print to terminal:
-  java -cp /usr/share/java/cup.jar:. CM tests/filename.cm
+* Run parser and semantic analyzer:
 
-* print to outputTree.txt file:
-  java -cp /usr/share/java/cup.jar:. CM tests/filename.cm > outputTree.txt
+  * Print to syntax tree and symbol table to terminal:
+    java -cp /usr/share/java/cup.jar:. CM tests/<filename>.cm
 
- 
-Extra:
- 
-to check cm.flex (prints to output.txt):
-java -cp /usr/share/java/cup_runtime.jar:. Scanner < tests/filename.cm > output.txt
+  * Save syntax tree to <filename>.abs and symbol table to <filename>.sym:
+    java -cp /usr/share/java/cup.jar:. -s CM tests/<filename>.cm
 
-Resources:
-Courselink>CIS4650>Content>Assignment and Project>C1-Package
+  * Note: Semantic analyzer will not run if there are parse errors
+
+

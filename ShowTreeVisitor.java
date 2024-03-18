@@ -47,10 +47,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
 	}
 
 	public void visit( VarExp exp, int level ) {
-		indent( level );
-		System.out.println( "VarExp: " + exp.name );
 		exp.variable.accept( this, level );
-
 	}
 
 	public void visit( CallExp exp, int level ) {
@@ -164,7 +161,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
 		indent( level );
 		System.out.println( "FunctionDec: " + exp.func );
 		level++;
-		// exp.result.accept( this, level );
+		exp.typ.accept( this, level );
 		exp.params.accept( this, level );
 		exp.body.accept( this, level );
 		exp.typ.accept( this, level );
