@@ -1,0 +1,7 @@
+/* Invalid type spec */
+ 
+void main(void) {
+  float x;
+ 
+  x = input;
+}
