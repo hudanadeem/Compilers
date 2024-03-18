@@ -1,5 +1,5 @@
 package absyn;
 
 abstract public class Dec extends Absyn {
-    public NameTy typ;
+	public NameTy typ;
 }

@@ -1,0 +1,9 @@
+void foo(void) {
+	bool x;
+}
+
+void main(void) {
+	int x;
+	if(x) output(foo());
+	if(foo()) output(x, foo());
+}

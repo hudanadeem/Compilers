@@ -1,0 +1,6 @@
+void funtwo(void) {
+	int x[2];
+	int k;
+
+	k = x + 3;
+}

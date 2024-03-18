@@ -2,7 +2,6 @@ package absyn;
 
 public class FunctionDec extends Dec {
 	public int pos;
-	//public NameTy result;
 	public String func;
 	public VarDecList params;
 	public Exp body;

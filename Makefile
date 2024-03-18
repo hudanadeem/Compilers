@@ -22,4 +22,4 @@ parser.java: cm.cup
 	$(CUP) -expect 3 cm.cup
 
 clean:
-	rm -f parser.java Lexer.java sym.java *.class absyn/*.class *~
+	rm -f parser.java Lexer.java sym.java *.class absyn/*.class tests/*.sym tests/*.abs *~

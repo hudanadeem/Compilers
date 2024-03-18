@@ -1,0 +1,11 @@
+/* A simple program to increment an input value */
+/* No errors */
+ 
+void main(void) {
+  int x;
+ 
+  x = input();
+  x = x + 1;
+ 
+  output(x);
+}

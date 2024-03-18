@@ -1,12 +1,15 @@
-/* A simple program to increment an input value */
-/* No errors */
- 
-/* Missing semi colon error */
- 
-void main(void) {
-  int x;
- 
-  x = x + 1;
+int i;
+int j;
 
-  return x;
+int f(int size) {
+	bool i;
+	bool temp;
+
+	if (i == temp) {
+		int j;
+	}
+
+	if (i == temp) {
+		bool j;
+	}
 }
