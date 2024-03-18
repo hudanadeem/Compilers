@@ -23,4 +23,22 @@ make
 
   * Note: Semantic analyzer will not run if there are parse errors
 
+3. 
+
+Test folder
+
+*******************************CHECKPOINT 1*******************************
+  *Provided test files:
+    java -cp /usr/share/java/cup.jar:. CM tests/given_tests_C1/filename.cm
+  
+  *Our test files:
+    java -cp /usr/share/java/cup.jar:. CM tests/12345_C1/filename.cm
+
+*******************************CHECKPOINT 2*******************************
+  *Provided test files:
+    java -cp /usr/share/java/cup.jar:. CM tests/given_tests_C2/filename.cm
+  
+  *Our test files:
+    java -cp /usr/share/java/cup.jar:. CM tests/filename.cm
+
 
