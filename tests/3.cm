@@ -1,2 +1,10 @@
-// while 2.cm through 4.cm should exhibit different
-// kinds of semantic errors (but no more than 3 per program)
+/*ERROR:Array index must be an integer*/
+
+void performOperation(void);
+
+void main(void) {
+    int numbers[3];
+    int index;
+    numbers[index] = 10; 
+    numbers[performOperation()] = 20; 
+}

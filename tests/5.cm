@@ -1,2 +1,30 @@
-/*or 5.cm, anything goes and there is
-no limit to the number and types of errors in it.  */
+/* 
+Type error in line 6: incompatable return type for function funtwo
+Type error in line 21: array index must be an integer
+Type error in line 23: mismatch types for assign expression
+*/
+
+void funtwo(void) {
+    int x;
+    x = 2;
+    return x; 
+}
+
+void processAction(void) {
+    bool isActive;
+}
+
+void performOperation(void);
+
+int main(void) {
+    int numbers[3];
+    int index;
+    int status;
+
+    numbers[index] = 10; 
+    numbers[performOperation()] = 20; 
+
+    status = processAction(); 
+
+    return 0;
+}

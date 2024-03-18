@@ -1,2 +1,9 @@
-/* while 2.cm through 4.cm should exhibit different
-kinds of semantic errors (but no more than 3 per program)*/
+/*the int variable is assigned a non-int*/
+void processAction(void) {
+    bool isActive;
+}
+
+void main(void) {
+    int status;
+    status = processAction();
+}
