@@ -13,7 +13,6 @@ import absyn.*;
 
 public class SemanticAnalyzer implements AbsynVisitor {
 
-	// public static boolean parseError = false;
 	private HashMap<String, ArrayList<NodeType>> table;
   final static int SPACES = 4;
   private int lastVisited = -1;
@@ -22,6 +21,13 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   public SemanticAnalyzer() {
     table = new HashMap<String, ArrayList<NodeType>>();
+
+    // Add pre-defined functions to hashtable
+    FunctionDec input = new FunctionDec( -1, new NameTy( -1, NameTy.INT), "input", null, null );
+    insert(input.func, new NodeType(input.func, input, -1));
+
+    FunctionDec output = new FunctionDec( -1, new NameTy( -1, NameTy.VOID), "output", null, null );
+    insert(output.func, new NodeType(output.func, output, -1));
   }
 
   /******* Vistor Methods *******/
