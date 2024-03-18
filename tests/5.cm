@@ -1,8 +1,4 @@
-/* 
-Type error in line 6: incompatable return type for function funtwo
-Type error in line 21: array index must be an integer
-Type error in line 23: mismatch types for assign expression
-*/
+/* incompatable return, array index incorrect and mismatch assigned expression*/
 
 void funtwo(void) {
     int x;

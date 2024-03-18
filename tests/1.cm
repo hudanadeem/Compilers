@@ -1,16 +1,11 @@
-/*Program 1.cm should compile without errors*/
-int i;
-int j;
-
-int f(int size) {
-	bool i;
-	bool temp;
-
-	if (i == temp) {
-		int j;
-	}
-
-	if (i == temp) {
-		bool j;
-	}
+/* A simple program to increment an input value */
+/* No errors */
+ 
+void main(void) {
+  int x;
+ 
+  x = input();
+  x = x + 1;
+ 
+  output(x);
 }
