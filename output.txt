@@ -1,16 +1,86 @@
+The abstract syntax tree is:
+FunctionDec: f
+    SimpleDec: n
+        TypeDec: int
+    CompoundExp: 
+        CallExp: g
+            VarExp: n
+            SimpleVar: n
+        AssignExp: 
+            VarExp: y
+            SimpleVar: y
+            OpExp: - 
+                VarExp: y
+                SimpleVar: y
+                IntExp: 1
+    TypeDec: void
+FunctionDec: g
+    SimpleDec: m
+        TypeDec: int
+    CompoundExp: 
+        AssignExp: 
+            VarExp: m
+            SimpleVar: m
+            OpExp: - 
+                VarExp: m
+                SimpleVar: m
+                IntExp: 1
+        IfExp: 
+            OpExp: > 
+                VarExp: m
+                SimpleVar: m
+                IntExp: 0
+            CompoundExp: 
+                CallExp: f
+                    VarExp: m
+                    SimpleVar: m
+                AssignExp: 
+                    VarExp: y
+                    SimpleVar: y
+                    OpExp: - 
+                        VarExp: y
+                        SimpleVar: y
+                        IntExp: 1
+                CallExp: g
+                    VarExp: m
+                    SimpleVar: m
+                TypeDec: void
+FunctionDec: main
+    CompoundExp: 
+        AssignExp: 
+            VarExp: x
+            SimpleVar: x
+            CallExp: input
+        AssignExp: 
+            VarExp: y
+            SimpleVar: y
+            CallExp: input
+        CallExp: g
+            VarExp: x
+            SimpleVar: x
+        CallExp: output
+            VarExp: x
+            SimpleVar: x
+        CallExp: output
+            VarExp: y
+            SimpleVar: y
+    TypeDec: int
 Entering the global scope:
-    Entering the scope for function gcd: int
+    Entering the scope for function f:
+Type error: operands for subtraction must be integers
+Type error: mismatch types for assign expression
+        n:int
+    Leaving the scope for function f
+    Entering the scope for function g:
         Entering a new block:
+Type error: operands for subtraction must be integers
+Type error: mismatch types for assign expression
         Leaving the block
-        Entering a new block:
-        Leaving the block
-        u:int
-        v:int
-    Leaving the scope for function gcd
-    Entering the scope for function main: void
-        x:int
-        y:int
+        m:int
+    Leaving the scope for function g
+    Entering the scope for function main:
     Leaving the scope for function main
-    gcd:int
-    main:void
+    f:void
+    g:void
+    main:int
 Leaving the global scope
