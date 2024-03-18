@@ -164,6 +164,8 @@ public class ShowTreeVisitor implements AbsynVisitor {
 		exp.typ.accept( this, level );
 		exp.params.accept( this, level );
 		exp.body.accept( this, level );
+		exp.typ.accept( this, level );
+
 	}
 
 	public void visit( SimpleDec exp, int level ) {

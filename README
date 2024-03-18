@@ -10,8 +10,8 @@ make
  
 2. Running:
 
-* Only run parser and save syntax tree to <filename>.abs:
-  java -cp /usr/share/java/cup.jar:. CM -a tests/<filename>.cm
+* syntax tree in test folder (filename.abs):
+  java -cp /usr/share/java/cup.jar:. CM -a tests/filename.cm
 
 * Run parser and semantic analyzer:
 
