@@ -3,6 +3,7 @@ Huda Nadeem (11439431)
 Zuya Abro (1109843)
  
 Checkpoint Two
+--------------
  
 1. Compiling:
 make
@@ -13,8 +14,10 @@ make
   java -cp /usr/share/java/cup.jar:. CM -a tests/<filename>.cm
 
 * Run parser and semantic analyzer:
+
   * Print to syntax tree and symbol table to terminal:
     java -cp /usr/share/java/cup.jar:. CM tests/<filename>.cm
+
   * Save syntax tree to <filename>.abs and symbol table to <filename>.sym:
     java -cp /usr/share/java/cup.jar:. -s CM tests/<filename>.cm
 
@@ -26,4 +29,6 @@ Assumptions:
 * -s flag means tree should be still saved to .abs in addition to symbol table saved to .sym
 * no flag means that both tree and symbol table should be printed
 * "int input(void)" and "void output(int)" are predefined functions that do not show in symbol table
+* if condition must be of boolean type
+* while condition must be of boolean or integer type
 
