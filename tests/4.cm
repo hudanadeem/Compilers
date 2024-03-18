@@ -1,1 +1,10 @@
-/** */
+/*Testing is Main is not there*/
+
+void main(void) {
+    int numbers[3];
+    int index;
+    numbers[index] = 10; 
+    numbers[2] = 20; 
+}
+
+void performOperation(void);

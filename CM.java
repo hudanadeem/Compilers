@@ -65,6 +65,7 @@ class CM {
 
             System.out.println("Entering the global scope:");
             result.accept(analyzer, 1);
+            analyzer.mainCheck();
             analyzer.leaveScope(1);
             System.out.println("Leaving the global scope");
 
@@ -74,6 +75,7 @@ class CM {
           else {
             System.out.println("Entering the global scope:");
             result.accept(analyzer, 1);
+            analyzer.mainCheck();
             analyzer.leaveScope(1);
             System.out.println("Leaving the global scope");
           }
