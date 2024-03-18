@@ -470,4 +470,16 @@ public class SemanticAnalyzer implements AbsynVisitor {
         return null;
     }
 
+  public SemanticAnalyzer() {
+    table = new HashMap<String, ArrayList<NodeType>>();
+  }
+
+  private ArrayList lookup(String key) {
+    if (table.containsKey(key)) {
+      return table.get(key);
+    } else {
+      return null;
+    }
+  }
+
 }
