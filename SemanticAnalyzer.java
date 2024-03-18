@@ -353,19 +353,33 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( SimpleDec exp, int level ) {
+    // Check that variable has not been declared
+    if (lookupNode(exp.name) != null) {
+      report_error(exp.pos, "variable with identifier '" + exp.name + "' already exists");
+    }
+    else {
+      insert(exp.name, new NodeType(exp.name, exp, level));
+    }
+
     // Check that variable type is not void
     if (isVoid(exp.typ.typ)) {
       report_error(exp.pos, "cannot declare variable of type 'void'");
     }
-    insert(exp.name, new NodeType(exp.name, exp, level));
   }
 
   public void visit( ArrayDec exp, int level ) {
+    // Check that variable has not been declared
+    if (lookupNode(exp.name) != null) {
+      report_error(exp.pos, "variable with identifier '" + exp.name + "' already exists");
+    }
+    else {
+      insert(exp.name, new NodeType(exp.name, exp, level));
+    }
+
     // Check that variable type is not void
     if (isVoid(exp.typ.typ)) {
       report_error(exp.pos, "cannot declare variable of type 'void'");
     }
-    insert(exp.name, new NodeType(exp.name, exp, level));
   }
 
   public void visit( DecList decList, int level ) {
