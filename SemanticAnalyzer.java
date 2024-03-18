@@ -15,6 +15,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
 	private HashMap<String, ArrayList<NodeType>> table;
   final static int SPACES = 4;
+  private boolean mainFound = false; // Added flag to track the presence of 'main'
 
   /* tracking variables */
   private int lastVisited = -1;   // represents type of current node
@@ -334,6 +335,12 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( FunctionDec exp, int level ) {
+
+    // check if a function is being declared after the main function
+    if (mainFound) {
+      report_error(exp.pos, "No functions should be declared after 'main'.");
+    }
+
     exp.typ.accept( this, level+1 );
 
     indent(level);
@@ -350,6 +357,17 @@ public class SemanticAnalyzer implements AbsynVisitor {
     indent(level);
     System.out.println("Leaving the scope for function " + exp.func);
     currentFunc = "";
+
+     // check if this function is a main function
+     if (exp.func.equals("main")) {
+      // checking if duplicate 'main' functions
+      if (mainFound) {
+          report_error(exp.pos, "'main' function defined more than once");
+      } else {
+          mainFound = true;
+      }
+    }
+
   }
 
   public void visit( SimpleDec exp, int level ) {
@@ -519,6 +537,14 @@ public class SemanticAnalyzer implements AbsynVisitor {
       return "void";
     }
     return null;
+  }
+
+  // check for main
+  public void mainCheck() {
+    if (!mainFound) {
+        // report if no main is found
+        System.err.println("Error: 'main' function not declared.");
+    }
   }
 
 }

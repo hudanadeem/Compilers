@@ -1,0 +1,10 @@
+Entering the global scope:
+    Entering the scope for function performOperation:
+    Leaving the scope for function performOperation
+    Entering the scope for function main:
+        numbers:int[]
+        index:int
+    Leaving the scope for function main
+    main:void
+    performOperation:void
+Leaving the global scope
