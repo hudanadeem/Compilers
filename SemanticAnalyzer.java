@@ -402,6 +402,10 @@ public class SemanticAnalyzer implements AbsynVisitor {
     return (type == NameTy.VOID);
   }
 
+  private boolean isArray(NodeType node) {
+    return (node.def instanceof ArrayDec);
+  }
+
   /* Prints each variable in specified scope then deletes from table */
   public void leaveScope(int scope) {
 
@@ -416,7 +420,12 @@ public class SemanticAnalyzer implements AbsynVisitor {
       for (NodeType node: entry.getValue()) {
         if (node.level == scope) {
             indent(scope);
-            System.out.println(entry.getKey() + ":" + type(node.def.typ));
+            System.out.print(entry.getKey() + ":" + type(node.def.typ));
+            if (isArray(node)) {
+              System.out.println("[]");
+            }else {
+              System.out.println();
+            }
             toRemove.add(new SimpleEntry<>(entry.getKey(), node));
         }
       }
