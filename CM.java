@@ -26,15 +26,19 @@ class CM {
             if (result != null) {
                 if (showTree) {
                     //tree
-                    System.out.println("The abstract syntax tree is:");
+                    System.out.println("*****The abstract syntax tree is:*****\n");
                     AbsynVisitor visitor = new ShowTreeVisitor();
                     result.accept(visitor, 0); 
+
+                    /********************Space between****************** */
+                    System.out.println("\n");
                     // analysis
+                    System.out.println("*****The analysis symbol table is:*****\n");
                     System.out.println("Entering the global scope:");
                     SemanticAnalyzer analyzer = new SemanticAnalyzer();
                     result.accept(analyzer, 1);
                     analyzer.leaveScope(1);
-                    System.out.println("Leaving the global scope");
+                    System.out.println("Leaving the global scope\n");
                 } else {
                     // Only tree to an output file
                     String outputFileName = inputFileName.substring(0, inputFileName.lastIndexOf('.')) + ".abs";
