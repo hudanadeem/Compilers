@@ -463,15 +463,26 @@ public class SemanticAnalyzer implements AbsynVisitor {
       HashMap.Entry<String, ArrayList<NodeType>> entry = iter.next();
 
       // Traverse each ArrayList and only print if in scope
+
       for (NodeType node: entry.getValue()) {
         if (node.level == scope) {
             indent(scope);
+
+            if(node.def instanceof FunctionDec){
+
+              // System.out.print(entry.getKey() + ":" + type(node.def.typ));
+              System.out.print(entry.getKey() + ":" + "(" +type(node.def.typ) + ")" + " -> " + type(node.def.typ) + "\n");
+            }else{
+            
             System.out.print(entry.getKey() + ":" + type(node.def.typ));
-            if (isArray(node)) {
-              System.out.println("[]");
-            }else {
-              System.out.println();
+
+              if (isArray(node)) {
+                System.out.println("[]");
+              }else {
+                System.out.println();
+              }
             }
+
             toRemove.add(new SimpleEntry<>(entry.getKey(), node));
         }
       }
