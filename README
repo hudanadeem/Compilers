@@ -9,7 +9,7 @@ make
  
 2. parser:
 
-* no output:
+* syntax tree in test folder (filename.abs):
   java -cp /usr/share/java/cup.jar:. CM -a tests/filename.cm
 
 * print to terminal:
