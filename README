@@ -2,7 +2,7 @@ Isabella McIvor (1101334)
 Huda Nadeem (11439431)
 Zuya Abro (1109843)
  
-Checkpoint One
+Checkpoint Two
  
 1. Compiling:
 make
@@ -27,5 +27,3 @@ Assumptions:
 * no flag means that both tree and symbol table should be printed
 * "int input(void)" and "void output(int)" are predefined functions that do not show in symbol table
 
-Resources:
-Courselink>CIS4650>Content>Assignment and Project>C1-Package
