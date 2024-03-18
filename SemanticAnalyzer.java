@@ -362,7 +362,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   /* Reports error */
   private void report_error(String message) {
-    System.out.println("Type error: " + message);
+    System.err.println("Type error: " + message);
   }
 
   /* Returns true if type is integer */
@@ -406,7 +406,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
 
-  /* Looks up ArrayList with specific key */
+  /* Looks up type of variable with identifier key */
   private int lookup(String key) {
     if (table.containsKey(key)) {
       ArrayList<NodeType> id = table.get(key);

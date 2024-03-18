@@ -24,5 +24,10 @@ Extra:
 to check cm.flex (prints to output.txt):
 java -cp /usr/share/java/cup_runtime.jar:. Scanner < tests/filename.cm > output.txt
 
+Assumptions:
+* All global variables and function declarations are declared right before leaving global scope
+* -s flag means tree should be still saved to .abs in addition to symbol table saved to .sym
+* no flag means that both tree and symbol table should be printed
+
 Resources:
 Courselink>CIS4650>Content>Assignment and Project>C1-Package
