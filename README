@@ -24,11 +24,12 @@ make
   * Note: Semantic analyzer will not run if there are parse errors
 
 
-Assumptions:
+3. Assumptions:
+
 * All global variables and function declarations are declared right before leaving global scope
 * -s flag means tree should be still saved to .abs in addition to symbol table saved to .sym
-* no flag means that both tree and symbol table should be printed
+* No flag means that both tree and symbol table should be printed
 * "int input(void)" and "void output(int)" are predefined functions that do not show in symbol table
-* if condition must be of boolean type
-* while condition must be of boolean or integer type
+* "if" condition must be of boolean type
+* "while" condition must be of boolean or integer type
 

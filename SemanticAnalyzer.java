@@ -15,7 +15,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
 	private HashMap<String, ArrayList<NodeType>> table;
   final static int SPACES = 4;
-  private int lastVisited = -1;
+  private int lastVisited = -1;   // represents type of current node
   private String currentFunc = "";
 
 
@@ -36,20 +36,29 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( SimpleVar simpleVar, int level ) {
+    
     lastVisited = lookup(simpleVar.name);
-    // check if it has been declared
+    
+    // Check if variable has been declared
+    if (lastVisited == -1) {
+      report_error("variable '" + simpleVar.name + "' undefined");
+    }
   }
 
   public void visit( IndexVar indexVar, int level ) {
-    // if indexVar.index != int, report error where index is an expression
+    
+    // Check if array index is integer
     indexVar.index.accept( this, level );
     if (!isInt(lastVisited)) {
       report_error("array index must be an integer");
     }
 
-    // check if it has been declared
-
     lastVisited = lookup(indexVar.name);
+
+    // Check if variable has been declared
+    if (lastVisited == -1) {
+      report_error("variable '" + indexVar.name + "' undefined");
+    }
   }
 
   public void visit( NilExp exp, int level ) {
