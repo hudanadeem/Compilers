@@ -46,7 +46,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( IndexVar indexVar, int level ) {
-    
+
     // Check if array index is integer
     indexVar.index.accept( this, level );
     if (!isInt(lastVisited)) {
@@ -65,36 +65,36 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( IntExp exp, int level ) {
-    // exp type = int
+    // Set current node type to int
     lastVisited = NameTy.INT;
   }
 
   public void visit( BoolExp exp, int level ) {
-    // exp type = bool
+    // Set current node type to bool
     lastVisited = NameTy.BOOL;
   }
 
   public void visit( VarExp exp, int level ) {
     exp.variable.accept( this, level );
-    // exp type = lookup(exp.name)
-    
   }
 
   public void visit( CallExp exp, int level ) {
 		exp.args.accept( this, level );
 
-    // exp type = lookup(exp.func)
+    // Set current node type to function type
     lastVisited = lookup(exp.func);
   }
 
   public void visit( OpExp exp, int level ) {
     int ltype = -1, rtype = -1;
 
+    // Set type of left operand
 		if (exp.left != null) {
 			 exp.left.accept( this, level );
     }
     ltype = lastVisited;
 
+    // Set type of right operand
 		if (exp.right != null) {
 			 exp.right.accept( this, level );
     }
@@ -232,12 +232,15 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( AssignExp exp, int level ) {
+    // Set type of LHS variable
 		exp.lhs.accept( this, level );
     int ltype = lastVisited;
+
+    // Set type of RHS expression
 		exp.rhs.accept( this, level );
     int rtype = lastVisited;
 
-    // if lhs type != rhs type, report error
+    // Check that LHS type = RHS type
     if (ltype != rtype) {
       report_error("mismatch types for assign expression");
     }
@@ -245,47 +248,51 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   public void visit( IfExp exp, int level ) {
 		exp.test.accept( this, level );
-    // if test != bool, report error
+
+    // Check that condition is of boolean type 
     if (!isBool(lastVisited)) {
       report_error("condition for if statement must be of boolean type");
     } 
 
+    // If block
     indent(level);
-    System.out.println("Entering a new block:");
+    System.out.println("Entering a new if block:");
 
 		exp.then.accept( this, level+1 );
 
     leaveScope(level+1);
     indent(level);
-    System.out.println("Leaving the block");
+    System.out.println("Leaving the if block");
 
+    // Else block
 		if (!(exp.elseExp instanceof NilExp)) {
       indent(level);
-      System.out.println("Entering a new block:");
+      System.out.println("Entering a new else block:");
       
 			exp.elseExp.accept( this, level+1 );
 
       leaveScope(level+1);
       indent(level);
-      System.out.println("Leaving the block");
+      System.out.println("Leaving the else block");
 		}
   }
 
   public void visit( WhileExp exp, int level ) {
     exp.test.accept( this, level+1 );
-    // if type != bool or int, report error
+    
+    // Check condition is of type boolean or integer
     if (!isInt(lastVisited) && !isBool(lastVisited)) {
       report_error("condition for while expression must be of boolean type");
     }
 
     indent(level);
-    System.out.println("Entering a new block:");
+    System.out.println("Entering a new while block:");
 
 		exp.body.accept( this, level+1 );
 
     leaveScope(level+1);
     indent(level);
-    System.out.println("Leaving the block");
+    System.out.println("Leaving the while block");
   }
 
   public void visit( ReturnExp exp, int level ) {
@@ -293,7 +300,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 			exp.exp.accept( this, level );
 		}
 
-    // if return type != lookup(function type), report error
+    // Check that return type matches function type
     if (lastVisited != lookup(currentFunc)) {
       report_error("incompatable return type for function " + currentFunc);
     }
@@ -310,6 +317,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     indent(level);
     System.out.println("Entering the scope for function " + exp.func + ":");
 
+    // Set value of current function
     currentFunc = exp.func;
     insert(exp.func, new NodeType(exp.func, exp, level));
     
@@ -323,25 +331,19 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
 
   public void visit( SimpleDec exp, int level ) {
-    // exp.typ.accept( this, level );
-
+    // Check that variable type is not void
     if (isVoid(exp.typ.typ)) {
       report_error("cannot declare variable of type 'void'");
     }
     insert(exp.name, new NodeType(exp.name, exp, level));
-      
-    // if exp type = void, report error
   }
 
   public void visit( ArrayDec exp, int level ) {
-
+    // Check that variable type is not void
     if (isVoid(exp.typ.typ)) {
       report_error("cannot declare variable of type 'void'");
     }
     insert(exp.name, new NodeType(exp.name, exp, level));
-  
-		// exp.typ.accept( this, level );
-    // if exp type = void, report error
   }
 
   public void visit( DecList decList, int level ) {
