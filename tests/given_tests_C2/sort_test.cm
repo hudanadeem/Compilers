@@ -1,0 +1,55 @@
+int x[10];
+
+int minloc(int a[], int low, int high) {
+  int i; int x; int k;
+  k = low;
+  x = a[low];
+  i = low + 1;
+  while (i < high) {
+    if (a[i] < x) {
+       x = a[i];
+       k = i; 
+    }
+    i = i + 1;
+  } 
+  return k;
+}
+
+void trolling(void) {
+  return 0; /*void function returns integer*/
+}
+
+void sort(int a[], int low, int high) {
+  int i; int k;
+  i = low;
+  while (i < high - 1) {
+    int t;
+    k = minloc(a, i, high);
+	k = minloc(a, trolling(), high); /*unmatched param types*/
+    t = a[k];
+    a[k] = a[i];
+    a[i] = t;
+    i = i + 1;
+  }
+}
+
+void main(void) {
+  int i;
+  i = 0;
+  while (trolling()) { /*non-boolean condition*/
+	int x[10]; /*redef*/
+    x[y] = input(); /*undef*/
+	x[trolling()]; /*bad index*/
+	i = trolling(); /*bad assignment*/
+  }
+
+  sort(x, 0, 10);
+
+  minloc(i, i); /*incorrect type, number of params*/
+
+  i = 0;
+  while (true < 10) { /*"true" and int are not comparable*/
+    output(x[i]);
+    i = i + 1;
+  }
+}

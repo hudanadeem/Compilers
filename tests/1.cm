@@ -1,8 +1,17 @@
 /* A simple program to increment an input value */
 /* No errors */
  
+void test (void){
+  return;
+}
 void main(void) {
+
+
   int x;
+
+  if( test() < 5){
+    x=x+1;
+  }
  
   x = input();
   x = x + 1;
