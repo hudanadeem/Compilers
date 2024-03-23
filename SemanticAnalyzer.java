@@ -35,10 +35,10 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   /******* Vistor Methods *******/
 
-  public void visit(NameTy nameTy, int level ) {
+  public void visit(NameTy nameTy, int level, boolean flag ) {
   }
 
-  public void visit( SimpleVar simpleVar, int level ) {
+  public void visit( SimpleVar simpleVar, int level, boolean flag ) {
     
     lastVisited = lookupType(simpleVar.name);
     
@@ -55,10 +55,10 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
 
-  public void visit( IndexVar indexVar, int level ) {
+  public void visit( IndexVar indexVar, int level, boolean flag ) {
 
     // Check if array index is integer
-    indexVar.index.accept( this, level );
+    indexVar.index.accept( this, level, false );
     if (!isInt(lastVisited, isArr)) {
       report_error(indexVar.pos, "array index must be an integer");
     }
@@ -73,27 +73,27 @@ public class SemanticAnalyzer implements AbsynVisitor {
     isArr = false;
   }
 
-  public void visit( NilExp exp, int level ) {
+  public void visit( NilExp exp, int level, boolean flag ) {
   }
 
-  public void visit( IntExp exp, int level ) {
+  public void visit( IntExp exp, int level, boolean flag ) {
     // Set current node type to int
     lastVisited = NameTy.INT;
     isArr = false;
   }
 
-  public void visit( BoolExp exp, int level ) {
+  public void visit( BoolExp exp, int level, boolean flag ) {
     // Set current node type to bool
     lastVisited = NameTy.BOOL;
     isArr = false;
   }
 
-  public void visit( VarExp exp, int level ) {
-    exp.variable.accept( this, level );
+  public void visit( VarExp exp, int level, boolean flag ) {
+    exp.variable.accept( this, level, false );
   }
 
-  public void visit( CallExp exp, int level ) {
-		exp.args.accept( this, level );
+  public void visit( CallExp exp, int level, boolean flag ) {
+		exp.args.accept( this, level, false );
 
     // Set current node type to function type
     lastVisited = lookupType(exp.func);
@@ -104,20 +104,20 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
 
-  public void visit( OpExp exp, int level ) {
+  public void visit( OpExp exp, int level, boolean flag ) {
     int ltype = -1, rtype = -1;
     boolean leftIsArr = false, rightIsArr = false;
 
     // Set type of left operand
 		if (exp.left != null) {
-			 exp.left.accept( this, level );
+			 exp.left.accept( this, level, false );
     }
     ltype = lastVisited;
     leftIsArr = isArr;
 
     // Set type of right operand
 		if (exp.right != null) {
-			 exp.right.accept( this, level );
+			 exp.right.accept( this, level, false );
     }
     rtype = lastVisited;
     rightIsArr = isArr;
@@ -253,13 +253,13 @@ public class SemanticAnalyzer implements AbsynVisitor {
 		  }
   }
 
-  public void visit( AssignExp exp, int level ) {
+  public void visit( AssignExp exp, int level, boolean flag ) {
     // Set type of LHS variable
-		exp.lhs.accept( this, level );
+		exp.lhs.accept( this, level, false );
     int ltype = lastVisited;
 
     // Set type of RHS expression
-		exp.rhs.accept( this, level );
+		exp.rhs.accept( this, level, false );
     int rtype = lastVisited;
 
     // Check that LHS type = RHS type
@@ -268,8 +268,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
 
-  public void visit( IfExp exp, int level ) {
-		exp.test.accept( this, level );
+  public void visit( IfExp exp, int level, boolean flag ) {
+		exp.test.accept( this, level, false );
 
     // Check that condition is of boolean type 
     if (!isBool(lastVisited, isArr)) {
@@ -280,7 +280,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     indent(level);
     System.out.println("Entering a new if block:");
 
-		exp.then.accept( this, level+1 );
+		exp.then.accept( this, level+1, false );
 
     leaveScope(level+1);
     indent(level);
@@ -291,7 +291,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
       indent(level);
       System.out.println("Entering a new else block:");
       
-			exp.elseExp.accept( this, level+1 );
+			exp.elseExp.accept( this, level+1, false );
 
       leaveScope(level+1);
       indent(level);
@@ -299,8 +299,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
 		}
   }
 
-  public void visit( WhileExp exp, int level ) {
-    exp.test.accept( this, level+1 );
+  public void visit( WhileExp exp, int level, boolean flag ) {
+    exp.test.accept( this, level+1, false );
     
     // Check condition is of type boolean or integer
     if (!isInt(lastVisited, isArr) && !isBool(lastVisited, isArr)) {
@@ -310,16 +310,16 @@ public class SemanticAnalyzer implements AbsynVisitor {
     indent(level);
     System.out.println("Entering a new while block:");
 
-		exp.body.accept( this, level+1 );
+		exp.body.accept( this, level+1, false );
 
     leaveScope(level+1);
     indent(level);
     System.out.println("Leaving the while block");
   }
 
-  public void visit( ReturnExp exp, int level ) {
+  public void visit( ReturnExp exp, int level, boolean flag ) {
 		if (exp.exp != null ) {
-			exp.exp.accept( this, level );
+			exp.exp.accept( this, level, false );
 		}
 
     // Check that return type matches function type
@@ -328,17 +328,17 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
 
-  public void visit( CompoundExp exp, int level ) {
-    exp.decs.accept( this, level );
-    exp.exps.accept( this, level );
+  public void visit( CompoundExp exp, int level, boolean flag ) {
+    exp.decs.accept( this, level, false );
+    exp.exps.accept( this, level, false );
   }
 
-  public void visit( FunctionDec exp, int level ) {
+  public void visit( FunctionDec exp, int level, boolean flag ) {
 
     if (mainFound) {
       report_error(exp.pos, "No functions should be declared after 'main'.");
     }
-    exp.typ.accept( this, level+1 );
+    exp.typ.accept( this, level+1, false );
   
     indent(level);
     System.out.println("Entering the scope for function " + exp.func + ":");
@@ -347,8 +347,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
     currentFunc = exp.func;
     insert(exp.func, new NodeType(exp.func, exp, level));
     
-    exp.params.accept( this, level+1 );
-    exp.body.accept( this, level+1 );
+    exp.params.accept( this, level+1, false );
+    exp.body.accept( this, level+1, false );
 
     leaveScope(level+1);
     indent(level);
@@ -367,7 +367,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 	  
   }
 
-  public void visit( SimpleDec exp, int level ) {
+  public void visit( SimpleDec exp, int level, boolean flag ) {
     // Check that variable has not been declared
     if (lookupNode(exp.name) != null) {
       report_error(exp.pos, "variable with identifier '" + exp.name + "' already exists");
@@ -382,7 +382,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
 
-  public void visit( ArrayDec exp, int level ) {
+  public void visit( ArrayDec exp, int level, boolean flag ) {
     // Check that variable has not been declared
     if (lookupNode(exp.name) != null) {
       report_error(exp.pos, "variable with identifier '" + exp.name + "' already exists");
@@ -397,28 +397,28 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
   }
 
-  public void visit( DecList decList, int level ) {
+  public void visit( DecList decList, int level, boolean flag ) {
     while( decList != null ) {
         if (decList.head != null) {
-            decList.head.accept( this, level );
+            decList.head.accept( this, level, false );
         }
         decList = decList.tail;
     }
   }
 
-  public void visit( VarDecList varDecList, int level ) {
+  public void visit( VarDecList varDecList, int level, boolean flag ) {
     while( varDecList != null ) {
         if (varDecList.head != null) {
-            varDecList.head.accept( this, level );
+            varDecList.head.accept( this, level, false );
         }
         varDecList = varDecList.tail;
     }
   }
 
-  public void visit( ExpList expList, int level ) {
+  public void visit( ExpList expList, int level, boolean flag ) {
     while( expList != null ) {
         if (expList.head != null) {
-            expList.head.accept( this, level );
+            expList.head.accept( this, level, false );
         }
         expList = expList.tail;
 		}

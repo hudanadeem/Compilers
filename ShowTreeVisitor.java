@@ -8,7 +8,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
 		for ( int i = 0; i < level * SPACES; i++ ) System.out.print( " " );
 	}
 
-	public void visit( NameTy nameTy, int level ) {
+	public void visit( NameTy nameTy, int level, boolean flag ) {
 		indent( level );
 		if (nameTy.typ == nameTy.VOID) {
 			System.out.println( "TypeDec: void" );
@@ -21,43 +21,43 @@ public class ShowTreeVisitor implements AbsynVisitor {
 		}
 	}
 
-	public void visit( SimpleVar simpleVar, int level ) {
+	public void visit( SimpleVar simpleVar, int level, boolean flag ) {
 		indent( level );
 		System.out.println( "SimpleVar: " + simpleVar.name );
 	}
 
-	public void visit( IndexVar indexVar, int level ) {
+	public void visit( IndexVar indexVar, int level, boolean flag ) {
 		indent(level);
 		System.out.println( "IndexVar: " + indexVar.name );
 	}
 
-	public void visit( NilExp exp, int level ) {
+	public void visit( NilExp exp, int level, boolean flag ) {
 		indent( level );
 		// System.out.println( "NilExp: " );
 	}
 
-	public void visit( IntExp exp, int level ) {
+	public void visit( IntExp exp, int level, boolean flag ) {
 		indent( level );
 		System.out.println( "IntExp: " + exp.value ); 
 	}
 
-	public void visit( BoolExp exp, int level ) {
+	public void visit( BoolExp exp, int level, boolean flag ) {
 		indent( level );
 		System.out.println( "BoolExp: " + exp.value );
 	}
 
-	public void visit( VarExp exp, int level ) {
-		exp.variable.accept( this, level );
+	public void visit( VarExp exp, int level, boolean flag ) {
+		exp.variable.accept( this, level, false );
 	}
 
-	public void visit( CallExp exp, int level ) {
+	public void visit( CallExp exp, int level, boolean flag ) {
 		indent( level );
 		System.out.println( "CallExp: " + exp.func );
 		level++;
-		exp.args.accept( this, level );
+		exp.args.accept( this, level, false );
 	}
 
-	public void visit( OpExp exp, int level ) {
+	public void visit( OpExp exp, int level, boolean flag ) {
 		indent( level );
 		System.out.print( "OpExp:" );
 		switch( exp.op ) {
@@ -108,102 +108,102 @@ public class ShowTreeVisitor implements AbsynVisitor {
 		  }
 		  level++;
 		  if (exp.left != null)
-			 exp.left.accept( this, level );
+			 exp.left.accept( this, level, false );
 		  if (exp.right != null)
-			 exp.right.accept( this, level );
+			 exp.right.accept( this, level, false );
 	}
 
-	public void visit( AssignExp exp, int level ) {
+	public void visit( AssignExp exp, int level, boolean flag ) {
 		indent( level );
 		System.out.println( "AssignExp: " );
 		level++;
-		exp.lhs.accept( this, level );
-		exp.rhs.accept( this, level );
+		exp.lhs.accept( this, level, false );
+		exp.rhs.accept( this, level, false );
 	}
 
-	public void visit( IfExp exp, int level ) {
+	public void visit( IfExp exp, int level, boolean flag ) {
 		indent( level );
 		System.out.println( "IfExp: " );
 		level++;
-		exp.test.accept( this, level );
-		exp.then.accept( this, level );
+		exp.test.accept( this, level, false );
+		exp.then.accept( this, level, false );
 		if (exp.elseExp != null ) {
-			exp.elseExp.accept( this, level );
+			exp.elseExp.accept( this, level, false );
 		}
 	}
 
-	public void visit( WhileExp exp, int level ) {
+	public void visit( WhileExp exp, int level, boolean flag ) {
 		indent( level );
 		System.out.println( "WhileExp: " );
 		level++;
-		exp.test.accept( this, level );
-		exp.body.accept( this, level );
+		exp.test.accept( this, level, false );
+		exp.body.accept( this, level, false );
 	}
 
-	public void visit( ReturnExp exp, int level ) {
+	public void visit( ReturnExp exp, int level, boolean flag ) {
 		indent( level );
 		System.out.println( "ReturnExp: " );
 		level++;
 		if (exp.exp != null ) {
-			exp.exp.accept( this, level );
+			exp.exp.accept( this, level, false );
 		}
 	}
 
-	public void visit( CompoundExp exp, int level ) {
+	public void visit( CompoundExp exp, int level, boolean flag ) {
 		indent( level );
 		System.out.println( "CompoundExp: " );
 		level++;
-		exp.decs.accept( this, level );
-		exp.exps.accept( this, level );
+		exp.decs.accept( this, level, false );
+		exp.exps.accept( this, level, false );
 	}
 
-	public void visit( FunctionDec exp, int level ) {
+	public void visit( FunctionDec exp, int level, boolean flag ) {
 		indent( level );
 		System.out.println( "FunctionDec: " + exp.func );
 		level++;
-		exp.typ.accept( this, level );
-		exp.params.accept( this, level );
-		exp.body.accept( this, level );
-		exp.typ.accept( this, level );
+		exp.typ.accept( this, level, false );
+		exp.params.accept( this, level, false );
+		exp.body.accept( this, level, false );
+		exp.typ.accept( this, level, false );
 
 	}
 
-	public void visit( SimpleDec exp, int level ) {
+	public void visit( SimpleDec exp, int level, boolean flag ) {
 		indent( level );
 		System.out.println( "SimpleDec: " + exp.name );
 		level++;
-		exp.typ.accept( this, level );
+		exp.typ.accept( this, level, false );
 	}
 
-	public void visit( ArrayDec exp, int level ) {
+	public void visit( ArrayDec exp, int level, boolean flag ) {
 		indent( level );
 		System.out.println( "ArrayDec: " + exp.name );
 		level++;
-		exp.typ.accept( this, level );
+		exp.typ.accept( this, level, false );
 	}
 
-	public void visit( DecList decList, int level ) {
+	public void visit( DecList decList, int level, boolean flag ) {
         while( decList != null ) {
             if (decList.head != null) {
-                decList.head.accept( this, level );
+                decList.head.accept( this, level, false );
             }
             decList = decList.tail;
         }
     }
  
-    public void visit( VarDecList varDecList, int level ) {
+    public void visit( VarDecList varDecList, int level, boolean flag ) {
         while( varDecList != null ) {
             if (varDecList.head != null) {
-                varDecList.head.accept( this, level );
+                varDecList.head.accept( this, level, false );
             }
             varDecList = varDecList.tail;
         }
     }
  
-    public void visit( ExpList expList, int level ) {
+    public void visit( ExpList expList, int level, boolean flag ) {
         while( expList != null ) {
             if (expList.head != null) {
-                expList.head.accept( this, level );
+                expList.head.accept( this, level, false );
             }
             expList = expList.tail;
 		}
