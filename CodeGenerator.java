@@ -56,7 +56,7 @@ public class CodeGenerator implements AbsynVisitor {
 		
 	}
 
-	public void visit( IntExp exp, inxst level, boolean flag ) {
+	public void visit( IntExp exp, int level, boolean flag ) {
 		
 	}
 
@@ -127,7 +127,7 @@ public class CodeGenerator implements AbsynVisitor {
 
 	/******* I/O Routines *******/
 
-	void inputRoutine( void ) {
+	void inputRoutine() {
 		emitComment("code for input routine");
 		// change to variables
 		emitRM("ST", 0, -1, 5, "store return");
@@ -135,7 +135,7 @@ public class CodeGenerator implements AbsynVisitor {
 		emitRM("LD", 7, -1, 5, "return to caller");
 	}
 
-	void outputRoutine(void) {
+	void outputRoutine() {
 		emitComment("code for output routine");
 		// change to variables
 		emitRM("ST", 0, -1, 5, "store return");
@@ -159,7 +159,7 @@ public class CodeGenerator implements AbsynVisitor {
 	/* Generate certain kind of assembly instructions */
 	void emitRM( String op, int r, int d, int s, String c ) {
 		System.out.print( emitLoc + ": " + op + " " + r + ", " + d + "(" + s + ")" );
-		System.out.print\n( "\t" + c );
+		System.out.println( "\t" + c );
 		emitLoc++;
 		if (highEmitLoc < emitLoc) {
 			highEmitLoc = emitLoc;
@@ -168,8 +168,8 @@ public class CodeGenerator implements AbsynVisitor {
 
 	/* Generate certain kind of assembly instructions */
 	void emitRm_Abs( String op, int r, int a, String c ) {
-		System.out.print( emitLoc + ": " + op + " " + r + ", " + a-(emitLoc+1) + "(" pc + ")" );
-		System.out.print\n( "\t" + c );
+		System.out.print( emitLoc + ": " + op + " " + r + ", " + (a-(emitLoc+1)) + "(" + pc + ")" );
+		System.out.println( "\t" + c );
 		emitLoc++;
 		if (highEmitLoc < emitLoc) {
 			highEmitLoc = emitLoc;
@@ -195,7 +195,7 @@ public class CodeGenerator implements AbsynVisitor {
 	}
 
 	/* Maintains code space */
-	void emitRestore( void ) {
+	void emitRestore() {
 		emitLoc = highEmitLoc;
 	}
 
