@@ -15,12 +15,12 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   private HashMap<String, ArrayList<NodeType>> table;
   final static int SPACES = 4;
-  private boolean mainFound = false; // Added flag to track the presence of 'main'
+  
   /* tracking variables */
   private int lastVisited = -1;   // represents type of current node
   private String currentFunc = "";  // keeps track of current function
   private boolean isArr = false;    // keeps track of whether exp node is equivalent to array or simple
-
+  private boolean mainFound = false; // flag to track the presence of 'main'
 
   public SemanticAnalyzer() {
     table = new HashMap<String, ArrayList<NodeType>>();
@@ -32,6 +32,17 @@ public class SemanticAnalyzer implements AbsynVisitor {
     FunctionDec output = new FunctionDec( -1, new NameTy( -1, NameTy.VOID), "output", null, null );
     insert(output.func, new NodeType(output.func, output, -1));
   }
+
+  /* Wrapper for post-order traversal */
+  public void visit(Absyn trees) {
+
+    System.out.println("Entering the global scope:");
+    trees.accept(this, 0, false);
+    mainCheck();
+    leaveScope(1);
+    System.out.println("Leaving the global scope");
+
+	}
 
   /******* Vistor Methods *******/
 
