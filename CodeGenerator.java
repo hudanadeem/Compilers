@@ -8,13 +8,16 @@ public class CodeGenerator implements AbsynVisitor {
 
 	// add constructor and all emitting routines
 	public CodeGenerator() {
-
+		emitComment("C-Minus Compilation to TM Code");
+		emitComment("File: ");
 	}
 
 	/*** Wrapper for post-order traversal ***/
 	public void visit(Absyn trees) {
+
 		// generate the prelude
 		emitComment("Standard prelude:");
+
 		// fix this with variables
 		emitRM("LD", 6, 0, 0, "load gp with maxaddress");
 		emitRM("LDA", 5, 0, 6, "copy gp to fp");
@@ -24,6 +27,9 @@ public class CodeGenerator implements AbsynVisitor {
 		emitComment("Jump around i/o routines here");
 		inputRoutine();
 		outputRoutine();
+		emitRM("LDA", 7, 7, 7, "jump around i/o code");
+
+		emitComment("End of standard prelude.");
 
 		// make a request to the visit method for DecList
 		trees.accept(this, 0, false);
@@ -69,14 +75,14 @@ public class CodeGenerator implements AbsynVisitor {
 	public void visit( OpExp exp, int level, boolean flag ) {
 		exp.left.accept(this, level, flag);
 		exp.right.accept(this, level, flag);
-		codeStr += newtemp(exp) + "=" + newtemp(exp.left) + "+" + newtemp(exp.right);
-		emitCode(codeStr);
+		// codeStr += newtemp(exp) + "=" + newtemp(exp.left) + "+" + newtemp(exp.right);
+		// emitCode(codeStr);
 	}
 
 	public void visit( AssignExp exp, int level, boolean flag ) {
 		exp.rhs.accept(this, level, flag);
-		codeStr += newtemp(exp.lhs) + "=" + newtemp(exp.rhs);
-		emitCode(codeStr);
+		// codeStr += newtemp(exp.lhs) + "=" + newtemp(exp.rhs);
+		// emitCode(codeStr);
 	}
 
 	public void visit( IfExp exp, int level, boolean flag ) {
@@ -119,10 +125,23 @@ public class CodeGenerator implements AbsynVisitor {
         
     }
 
-	/**** I/O Routines *****/
+	/******* I/O Routines *******/
+
 	void inputRoutine( void ) {
 		emitComment("code for input routine");
 		// change to variables
+		emitRM("ST", 0, -1, 5, "store return");
+		emitRO("IN", 0, 0, 0, "input");
+		emitRM("LD", 7, -1, 5, "return to caller");
+	}
+
+	void outputRoutine(void) {
+		emitComment("code for output routine");
+		// change to variables
+		emitRM("ST", 0, -1, 5, "store return");
+		emitRM("LD", 0, -2, 5, "load output value");
+		emitRO("OUT", 0, 0, 0, "output");
+		emitRM("LD", 7, -1, 5, "return to caller");
 	}
 
 	/****** Emitting Routines ******/
