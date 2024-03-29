@@ -5,6 +5,7 @@ public class FunctionDec extends Dec {
 	public String func;
 	public VarDecList params;
 	public Exp body;
+	public int funaddr;
 
 	public FunctionDec( int pos, NameTy result, String func, VarDecList params, Exp body ) {
 		this.pos = pos;
