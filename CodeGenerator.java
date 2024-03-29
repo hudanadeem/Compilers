@@ -7,9 +7,9 @@ public class CodeGenerator implements AbsynVisitor {
 	String codeStr = "";
 
 	// add constructor and all emitting routines
-	public CodeGenerator() {
+	public CodeGenerator( String fname ) {
 		emitComment("C-Minus Compilation to TM Code");
-		emitComment("File: ");
+		emitComment("File: " + fname);
 	}
 
 	/*** Wrapper for post-order traversal ***/
@@ -201,6 +201,6 @@ public class CodeGenerator implements AbsynVisitor {
 
 	/* Generate one line of comment */
 	void emitComment( String c ) {
-		System.out.println( "*" + c );
+		System.out.println( "* " + c );
 	}
 }

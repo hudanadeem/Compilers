@@ -4,6 +4,7 @@ import absyn.*;
 class CM {
   public static boolean SEMANTIC = true;
   public static boolean OUTPUT = true;
+  public static boolean ASSEMBLY = false;
   static public void main(String argv[]) {  
       
     /* Start the parser */
@@ -17,6 +18,10 @@ class CM {
           OUTPUT = false;
         } else if (argv[i].equals("-s")) {
           SEMANTIC = true;
+          OUTPUT = false;
+        } else if (argv[i].equals("-c")) {
+          SEMANTIC = true;
+          ASSEMBLY = true;
           OUTPUT = false;
         } else {
           inputFileName = argv[i];
@@ -33,7 +38,8 @@ class CM {
       Absyn result = (Absyn)(p.parse().value);
       AbsynVisitor visitor = new ShowTreeVisitor();  
 
-      // Print parse tree    
+      /*** Abstract Syntax Tree Generation ***/  
+
       if (OUTPUT == true && result != null) {
          System.out.println("The abstract syntax tree is:");
 
@@ -54,6 +60,8 @@ class CM {
           System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
       }
 
+      /*** Semantic Analyzer / Symbol Table Generation ***/
+
       if (!p.parseError && SEMANTIC) {
         SemanticAnalyzer analyzer = new SemanticAnalyzer();
 
@@ -71,6 +79,15 @@ class CM {
           else {
             analyzer.visit(result);
           }
+      }
+
+
+      /*** Assembly Code Generation ***/
+      if (ASSEMBLY) {
+        String outputFileName = inputFileName.substring(0, inputFileName.lastIndexOf('.')) + ".tm";
+
+        CodeGenerator assemblyGen = new CodeGenerator(outputFileName);
+        assemblyGen.visit(result);
       }
         
 
