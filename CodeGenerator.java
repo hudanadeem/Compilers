@@ -1,17 +1,21 @@
 import absyn.*;
 
 public class CodeGenerator implements AbsynVisitor {
-	int mainEntry;							// keeps track if main entered
-	int inputEntry, outputEntry;			// to access input and output later, with calls jump to the starts of these functions
-	int globalOffset;						// 
-	int pc = 0;	 							// address of next instruction
-	// int	gp;									// global frame pointer
-	// int fp;									// current stack frame pointer
-	int emitLoc = 0;  						// 
-	int highEmitLoc = 0;					// 
-	// String codeStr = "";					// 
+	/* Register constants */
+	public static final int pc = 7;	 			// register number of program counter
+	public static final int gp = 6;				// register number of global frame pointer
+	public static final int fp = 5;				// register number of current stack frame pointer
+	public static final int ac = 0;
+	public static final int ac1 = 1;
 
-	// add constructor and all emitting routines
+	/* Tracking variables */
+	int mainEntry;							// absolute address for main
+	int inputEntry, outputEntry;			// to access input and output later, with calls jump to the starts of these functions
+	int globalOffset;						// next available loc after global frame
+	int emitLoc = 0;  						// 
+	int highEmitLoc = 0;					//
+	int ofpFO;
+
 	public CodeGenerator( String fname ) {
 		emitComment("C-Minus Compilation to TM Code");
 		emitComment("File: " + fname);
@@ -20,17 +24,16 @@ public class CodeGenerator implements AbsynVisitor {
 	/*** Wrapper for post-order traversal ***/
 	public void visit(Absyn trees) {
 
-		// generate the prelude
+		// Generate the prelude
 		emitComment("Standard prelude:");
 
-		// fix this with variables
-		emitRM("LD", 6, 0, 0, "load gp with maxaddress");
-		emitRM("LDA", 5, 0, 6, "copy gp to fp");
-		emitRM("ST", 0, 0, 0, "clear location 0");
+		emitRM("LD", gp, 0, ac, "load gp with maxaddress");
+		emitRM("LDA", fp, 0, gp, "copy gp to fp");
+		emitRM("ST", ac, 0, ac, "clear location 0");
 
 		int savedLoc = emitSkip(1);
 
-		// generate the i/o routines
+		// Generate the I/O routines
 		emitComment("Jump around i/o routines here");
 		int savedLoc2 = emitSkip(0);
 		emitBackup(savedLoc);
@@ -38,20 +41,28 @@ public class CodeGenerator implements AbsynVisitor {
 
 		inputRoutine();
 		outputRoutine();
-		emitRM("LDA", 7, 7, 7, "jump around i/o code");
+		emitRM("LDA", pc, pc, pc, "jump around i/o code");
 
 		emitComment("End of standard prelude.");
 
-		// make a request to the visit method for DecList
+		// Make a request to the visit method for DecList
 		trees.accept(this, 0, false);
 
-		// generate finale
+		// Generate finale
+		emitRM("ST", fp, globalOffset+ofpFO, fp, "push ofp");
+		emitRM("LDA", fp, globalOffset, fp, "push frame");
+		emitRM("LDA", ac, 1, pc, "load ac with ret ptr");
+		emitRM_Abs("LDA", pc, mainEntry, "jump to main loc");
+		emitRM("LD", fp, ofpFO, fp, "pop frame");
+
+		emitComment("End of execution.");
+		emitRO("HALT", 0, 0, 0, "");
 
 	}
 
 	/****** Visitor Methods ******/
 
-	public void visit( NameTy nameTy, int frameOffset, boolean isAddr ) {
+	public void visit( NameTy nameTy, int frameOffset, boolean isAddr ) {  // frameOffset is the stack pointer (sp) -- offset within the related stackframe or memory access
 		
 	}
 
@@ -189,8 +200,8 @@ public class CodeGenerator implements AbsynVisitor {
 		}
 	}
 
-	/* Generate certain kind of assembly instructions */
-	void emitRm_Abs( String op, int r, int a, String c ) {
+	/* Jump from location emitLoc to location a */
+	void emitRM_Abs( String op, int r, int a, String c ) {
 		System.out.print( emitLoc + ": " + op + " " + r + ", " + (a-(emitLoc+1)) + "(" + pc + ")" );
 		System.out.println( "\t" + c );
 		emitLoc++;

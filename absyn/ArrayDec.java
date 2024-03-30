@@ -20,7 +20,7 @@ public class ArrayDec extends VarDec {
 	}
 
 	public setOffset(int offset) {
-		this.offset = offset;
+		this.offset = offset;	// frameOffset from visit parameter
 	}
 
 	public void accept( AbsynVisitor visitor, int level, boolean flag ) {
