@@ -8,9 +8,9 @@ public class CodeGenerator implements AbsynVisitor {
 	public static final int ac = 0;
 	public static final int ac1 = 1;
 	
-	/* Stack constants */
-	public static final int ofp = 0;
-	public static final int retaddr = -1;
+	// /* Stack constants */
+	// public static final int ofp = 0;
+	// public static final int retaddr = -1;
 
 	/* Tracking variables */
 	int mainEntry;							// absolute address for main
@@ -18,6 +18,9 @@ public class CodeGenerator implements AbsynVisitor {
 	int globalOffset = 0;					// next available loc after global frame
 	int emitLoc = 0;  						// current instruction location
 	int highEmitLoc = 0;					// next available space for new instructions
+	int ofpFO;
+	int retFO;
+	int initFO;
 
 	boolean global = true;					// keeps track of whether we are in global or not
 
