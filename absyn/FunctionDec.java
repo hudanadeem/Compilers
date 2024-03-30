@@ -15,7 +15,7 @@ public class FunctionDec extends Dec {
 		this.body = body;
 	}
 
-	public setAddr(int funaddr) {
+	public void setAddr(int funaddr) {
 		this.funaddr = funaddr;
 	}
 

@@ -15,11 +15,11 @@ public class ArrayDec extends VarDec {
 		}
 	}
 
-	public setNestLevel(int level) {
+	public void setNestLevel(int level) {
 		this.nestLevel = level;
 	}
 
-	public setOffset(int offset) {
+	public void setOffset(int offset) {
 		this.offset = offset;	// frameOffset from visit parameter
 	}
 

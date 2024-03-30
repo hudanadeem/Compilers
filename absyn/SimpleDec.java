@@ -10,11 +10,11 @@ public class SimpleDec extends VarDec {
 		this.name = name;
 	}
 
-	public setNestLevel(int level) {
+	public void setNestLevel(int level) {
 		this.nestLevel = level;
 	}
 
-	public setOffset(int offset) {
+	public void setOffset(int offset) {
 		this.offset = offset;
 	}
 
