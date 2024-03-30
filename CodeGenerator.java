@@ -5,22 +5,18 @@ public class CodeGenerator implements AbsynVisitor {
 	public static final int pc = 7;	 			// register number of program counter
 	public static final int gp = 6;				// register number of global frame pointer
 	public static final int fp = 5;				// register number of current stack frame pointer
-	public static final int ac = 0;
-	public static final int ac1 = 1;
-	
-	// /* Stack constants */
-	// public static final int ofp = 0;
-	// public static final int retaddr = -1;
+	public static final int ac = 0;				// register 0
+	public static final int ac1 = 1;			// register 1
 
 	/* Tracking variables */
-	int mainEntry;							// absolute address for main
+	int mainEntry = 0;							// absolute address for main
 	int inputEntry, outputEntry;			// to access input and output later, with calls jump to the starts of these functions
 	int globalOffset = 0;					// next available loc after global frame
 	int emitLoc = 0;  						// current instruction location
 	int highEmitLoc = 0;					// next available space for new instructions
-	int ofpFO;
-	int retFO;
-	int initFO;
+	int ofpFO = 0;							// start address of function's stack frame?
+	int retFO = 0;							// return address of function
+	int initFO = 0;							//
 
 	boolean global = true;					// keeps track of whether we are in global or not
 
@@ -57,11 +53,11 @@ public class CodeGenerator implements AbsynVisitor {
 		trees.accept(this, -2, false);
 
 		// Generate finale
-		// emitRM(" ST", fp, globalOffset+ofpFO, fp, "push ofp");
+		emitRM(" ST", fp, globalOffset+ofpFO, fp, "push ofp");
 		emitRM("LDA", fp, globalOffset, fp, "push frame");
 		emitRM("LDA", ac, 1, pc, "load ac with ret ptr");
 		emitRM_Abs("LDA", pc, mainEntry, "jump to main loc");
-		// emitRM(" LD", fp, ofpFO, fp, "pop frame");
+		emitRM(" LD", fp, ofpFO, fp, "pop frame");
 
 		emitComment("End of execution.");
 		emitRO("HALT", 0, 0, 0, "");
