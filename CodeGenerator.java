@@ -140,6 +140,12 @@ public class CodeGenerator implements AbsynVisitor {
 		else if (exp.op == OpExp.MINUS) {
 			emitRO("SUB", ac, ac, ac1, "op -");
 		}
+		else if (exp.op == OpExp.TIMES) {
+			emitRO("MUL", ac, ac, ac1, "op *");
+		}
+		else if (exp.op == OpExp.DIV) {
+			emitRO("DIV", ac, ac, ac1, "op /");
+		}
 
 		emitComment("<- op");
 		emitRM(" ST", ac, frameOffset, fp, "op: push left");
@@ -185,13 +191,33 @@ public class CodeGenerator implements AbsynVisitor {
 	}
 
 	public void visit( FunctionDec exp, int frameOffset, boolean isAddr ) {
+		// Leave global scope 
+		global = false;
+		emitComment("processing function: " + exp.func);
+
+		if (exp.func == "main") {
+			mainEntry = globalOffset;
+		}
+
 		exp.typ.accept( this, frameOffset, false );
 		exp.params.accept( this, frameOffset, false );
     	exp.body.accept( this, frameOffset, false );
+
+		// Re-enter global scope
+		global = true;
 	}
 
 	public void visit( SimpleDec exp, int frameOffset, boolean isAddr ) {
-		
+		if (global) {
+			emitComment("allocating global var: " + exp.name);
+			exp.setNestLevel(0);
+			exp.setOffset(frameOffset);
+		}
+		else {
+			emitComment("processing local var: "+ exp.name);
+			exp.setNestLevel(1);
+			exp.setOffset(frameOffset);
+		}
 	}
 
 	public void visit( ArrayDec exp, int frameOffset, boolean isAddr ) {
@@ -211,6 +237,7 @@ public class CodeGenerator implements AbsynVisitor {
         while( varDecList != null ) {
 			if (varDecList.head != null) {
 				varDecList.head.accept( this, frameOffset, false );
+				frameOffset++;
 			}
 			varDecList = varDecList.tail;
     	}
