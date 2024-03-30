@@ -23,6 +23,11 @@ make
 
   * Note: Semantic analyzer will not run if there are parse errors
 
+
+
+  C3:
+  * java -cp /usr/share/java/cup.jar:. -c CM tests/given_tests_C1/fac.cm
+
 3. 
 
 Test folder
