@@ -15,6 +15,14 @@ public class ArrayDec extends VarDec {
 		}
 	}
 
+	public setNestLevel(int level) {
+		this.nestLevel = level;
+	}
+
+	public setOffset(int offset) {
+		this.offset = offset;
+	}
+
 	public void accept( AbsynVisitor visitor, int level, boolean flag ) {
 		visitor.visit( this, level, false );
 	}

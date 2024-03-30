@@ -15,6 +15,10 @@ public class FunctionDec extends Dec {
 		this.body = body;
 	}
 
+	public setAddr(int funaddr) {
+		this.funaddr = funaddr;
+	}
+
 	public void accept( AbsynVisitor visitor, int level, boolean flag ) {
 		visitor.visit( this, level, false );
 	}

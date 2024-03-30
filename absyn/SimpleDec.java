@@ -10,6 +10,14 @@ public class SimpleDec extends VarDec {
 		this.name = name;
 	}
 
+	public setNestLevel(int level) {
+		this.nestLevel = level;
+	}
+
+	public setOffset(int offset) {
+		this.offset = offset;
+	}
+
 	public void accept( AbsynVisitor visitor, int level, boolean flag ) {
 		visitor.visit( this, level, false );
 	}
