@@ -130,6 +130,8 @@ public class CodeGenerator implements AbsynVisitor {
         emitRM("LDA", ac, 1, pc, "load ac with ret ptr");
         emitRM("LDA", pc, frameOffset, pc, "jump to fun loc");
         emitRM(" LD", fp, ofpFO, fp, "pop frame");
+
+        emitComment("<- call");
     }
 
     public void visit( OpExp exp, int frameOffset, boolean isAddr ) {
@@ -169,8 +171,8 @@ public class CodeGenerator implements AbsynVisitor {
         exp.rhs.accept(this, frameOffset-2, false);
 
         // Do the assignment and save the result to location frameOffset
-        emitRM(" LD", ac, frameOffset-1, fp, "");
-        emitRM(" LD", ac1, frameOffset-2, fp, "");
+        emitRM(" LD", ac, frameOffset-3, fp, "");
+        emitRM(" LD", ac1, frameOffset-4, fp, "");
         emitRM(" ST", ac1, ac, ac, "");
         emitRM(" ST", ac1, frameOffset, fp, "assign: store value");
     }
