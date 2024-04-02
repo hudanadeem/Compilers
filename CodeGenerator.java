@@ -109,7 +109,7 @@ public class CodeGenerator implements AbsynVisitor {
     }
 
     public void visit( BoolExp exp, int frameOffset, boolean isAddr ) {
-        
+
     }
 
     public void visit( VarExp exp, int frameOffset, boolean isAddr ) {
@@ -119,6 +119,11 @@ public class CodeGenerator implements AbsynVisitor {
     public void visit( CallExp exp, int frameOffset, boolean isAddr ) {
         emitComment("-> call of function: " + exp.func);
         exp.args.accept( this, frameOffset, false );
+
+        // code to compute first arg
+        // ST ac, frameOffset+initFO(fp)
+        // code to compute second arg
+        // ST ac, frameOffset+initFO-1s
 
         emitRM(" ST", fp, frameOffset+ofpFO, fp, "push ofp");
         emitRM("LDA", fp, frameOffset, fp, "push frame");
@@ -180,8 +185,23 @@ public class CodeGenerator implements AbsynVisitor {
     }
 
     public void visit( WhileExp exp, int frameOffset, boolean isAddr ) {
+        emitComment("while: jump after body comes back here");
+
+        int saveLoc = emitSkip(0);
         exp.test.accept( this, frameOffset, false );
+
+        int saveLoc2 = emitSkip(1);
         exp.body.accept( this, frameOffset, false );
+
+        emitRM_Abs("LDA", pc, saveLoc, "while: jump back to test");
+
+        int saveLoc3 = emitSkip(0);
+
+        emitBackup(saveLoc2);
+        emitRM_Abs("JEQ", ac, saveLoc3, "while: jump to end");
+        emitRestore();
+
+        emitComment("<- while");
     }
 
     public void visit( ReturnExp exp, int frameOffset, boolean isAddr ) {
