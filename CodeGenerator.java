@@ -74,21 +74,18 @@ public class CodeGenerator implements AbsynVisitor {
 
     public void visit( SimpleVar simpleVar, int frameOffset, boolean isAddr ) {
         emitComment("-> id");
-        emitComment("looking up id: " + simpleVar.name + " " + isAddr);
-
-        // Calculate var offset
-        int varOffset = 0;
+        emitComment("looking up id: " + simpleVar.name);
 
         if (isAddr) {
             // Compute address of simpleVar and save it to location frameOffset
-            emitRM("LDA", ac, varOffset, fp, "load id address");
+            emitRM("LDA", ac, frameOffset, fp, "load id address");
             emitComment("<- id");
-            emitRM(" ST", ac, frameOffset, fp, "op: push left");
+            emitRM(" ST", ac, frameOffset-2, fp, "op: push left");
         } else {
             // Save the value of simpleVar to location frameOffset
-            emitRM(" LD", ac, varOffset, fp, "load id value");
+            emitRM(" LD", ac, frameOffset, fp, "load id value");
             emitComment("<- id");
-            emitRM(" ST", ac, frameOffset, fp, "op: push left");
+            emitRM(" ST", ac, frameOffset-2, fp, "op: push left");
         }
     }
 
@@ -120,7 +117,14 @@ public class CodeGenerator implements AbsynVisitor {
     }
 
     public void visit( CallExp exp, int frameOffset, boolean isAddr ) {
+        emitComment("-> call of function: " + exp.func);
         exp.args.accept( this, frameOffset, false );
+
+        emitRM(" ST", fp, frameOffset+ofpFO, fp, "push ofp");
+        emitRM("LDA", fp, frameOffset, fp, "push frame");
+        emitRM("LDA", ac, 1, pc, "load ac with ret ptr");
+        emitRM("LDA", pc, frameOffset, pc, "jump to fun loc");
+        emitRM(" LD", fp, ofpFO, fp, "pop frame");
     }
 
     public void visit( OpExp exp, int frameOffset, boolean isAddr ) {
@@ -156,7 +160,6 @@ public class CodeGenerator implements AbsynVisitor {
     }
 
     public void visit( AssignExp exp, int frameOffset, boolean isAddr ) {
-        System.out.println("Assign exp LHS: " + exp.lhs.name);
         exp.lhs.accept(this, frameOffset-1, true);
         exp.rhs.accept(this, frameOffset-2, false);
 
@@ -164,7 +167,7 @@ public class CodeGenerator implements AbsynVisitor {
         emitRM(" LD", ac, frameOffset-1, fp, "");
         emitRM(" LD", ac1, frameOffset-2, fp, "");
         emitRM(" ST", ac1, ac, ac, "");
-        emitRM(" ST", ac1, frameOffset, fp, "");
+        emitRM(" ST", ac1, frameOffset, fp, "assign: store value");
     }
 
     public void visit( IfExp exp, int frameOffset, boolean isAddr ) {
