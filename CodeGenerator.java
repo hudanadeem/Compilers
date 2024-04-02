@@ -14,9 +14,9 @@ public class CodeGenerator implements AbsynVisitor {
     int globalOffset = 0;					// next available loc after global frame
     int emitLoc = 0;  						// current instruction location
     int highEmitLoc = 0;					// next available space for new instructions
-    int ofpFO = 0;							// start address of function's stack frame?
-    int retFO = 0;							// return address of function
-    int initFO = 0;							//
+    int ofpFO = 0;							// frame pointer of the caller
+    int retFO = 0;							// return address to go back to after callee is executed
+    int initFO = 0;							// initial frame offset of function stack frame
 
     boolean global = true;					// keeps track of whether we are in global or not
 
@@ -74,7 +74,7 @@ public class CodeGenerator implements AbsynVisitor {
 
     public void visit( SimpleVar simpleVar, int frameOffset, boolean isAddr ) {
         emitComment("-> id");
-        emitComment("looking up id: " + simpleVar.name);
+        emitComment("looking up id: " + simpleVar.name + " " + isAddr);
 
         // Calculate var offset
         int varOffset = 0;
@@ -156,6 +156,7 @@ public class CodeGenerator implements AbsynVisitor {
     }
 
     public void visit( AssignExp exp, int frameOffset, boolean isAddr ) {
+        System.out.println("Assign exp LHS: " + exp.lhs.name);
         exp.lhs.accept(this, frameOffset-1, true);
         exp.rhs.accept(this, frameOffset-2, false);
 
