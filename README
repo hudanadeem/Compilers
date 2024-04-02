@@ -19,14 +19,9 @@ make
     java -cp /usr/share/java/cup.jar:. CM tests/<filename>.cm
 
   * Save syntax tree to <filename>.abs and symbol table to <filename>.sym:
-    java -cp /usr/share/java/cup.jar:. -s CM tests/<filename>.cm
+    java -cp /usr/share/java/cup.jar:. CM -s tests/<filename>.cm
 
   * Note: Semantic analyzer will not run if there are parse errors
-
-
-
-  C3:
-  * java -cp /usr/share/java/cup.jar:. -c CM tests/given_tests_C1/fac.cm
 
 3. 
 
@@ -46,4 +41,7 @@ Test folder
   *Our test files:
     java -cp /usr/share/java/cup.jar:. CM tests/filename.cm
 
+*******************************CHECKPOINT 3*******************************
+
+    java -cp /usr/share/java/cup.jar:. CM -c tests/given_tests_C1/fac.cm
 
