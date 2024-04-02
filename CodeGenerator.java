@@ -49,8 +49,10 @@ public class CodeGenerator implements AbsynVisitor {
 
         emitComment("End of standard prelude.");
 
+        emitBackup(savedLoc2);
+
         // Make a request to the visit method for DecList
-        trees.accept(this, -2, false);
+        trees.accept(this, -1, false);
 
         // Generate finale
         emitRM(" ST", fp, globalOffset+ofpFO, fp, "push ofp");
@@ -199,8 +201,18 @@ public class CodeGenerator implements AbsynVisitor {
         }
 
         exp.typ.accept( this, frameOffset, false );
-        exp.params.accept( this, frameOffset, false );
+
+        emitComment("jump around function body here");
+        int savedLoc = emitSkip(1);
+
+        emitRM(" ST", ac, frameOffset, fp, "store return");
+
         exp.body.accept( this, frameOffset, false );
+
+        int savedLoc2 = emitSkip(0);
+        emitBackup(savedLoc);
+
+        // exp.params.accept( this, frameOffset, false );
 
         // Re-enter global scope
         global = true;
