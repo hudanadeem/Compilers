@@ -35,17 +35,17 @@ public class CodeGenerator implements AbsynVisitor {
         emitRM("LDA", fp, 0, gp, "copy gp to fp");
         emitRM(" ST", ac, 0, ac, "clear location 0");
 
-        // int savedLoc = emitSkip(1);
+        int savedLoc = emitSkip(1);
 
         // Generate the I/O routines
         emitComment("Jump around i/o routines here");
-        // int savedLoc2 = emitSkip(0);
-        // emitBackup(savedLoc);
-        // emitRM_Abs("LDA", pc, savedLoc2, "");
 
         inputRoutine();
         outputRoutine();
-        emitRM("LDA", pc, pc, pc, "jump around i/o code");
+
+        int savedLoc2 = emitSkip(0);
+        emitBackup(savedLoc);
+        emitRM_Abs("LDA", pc, savedLoc2, "jump around i/o code");
 
         emitComment("End of standard prelude.");
 
@@ -267,7 +267,7 @@ public class CodeGenerator implements AbsynVisitor {
         emitRM(" ST", ac, -1, fp, "store return");
         emitRM(" LD", ac, -2, fp, "load output value");
         emitRO("OUT", 0, 0, 0, "output");
-        emitRM(" LD", pc, -1, fp, "return to caller");
+        emitRM("LD", pc, -1, fp, "return to caller");
     }
 
     /****** Emitting Routines ******/
