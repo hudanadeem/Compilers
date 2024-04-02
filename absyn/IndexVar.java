@@ -11,6 +11,6 @@ public class IndexVar extends Var {
 	}
 
 	public void accept( AbsynVisitor visitor, int level, boolean flag ) {
-		visitor.visit( this, level, false );
+		visitor.visit( this, level, flag );
 	}
 }

@@ -14,9 +14,9 @@ public class CodeGenerator implements AbsynVisitor {
     int globalOffset = 0;					// next available loc after global frame
     int emitLoc = 0;  						// current instruction location
     int highEmitLoc = 0;					// next available space for new instructions
-    int ofpFO = 0;							// start address of function's stack frame?
-    int retFO = 0;							// return address of function
-    int initFO = 0;							//
+    int ofpFO = 0;							// frame pointer of the caller
+    int retFO = 0;							// return address to go back to after callee is executed
+    int initFO = 0;							// initial frame offset of function stack frame
 
     boolean global = true;					// keeps track of whether we are in global or not
 
@@ -35,22 +35,24 @@ public class CodeGenerator implements AbsynVisitor {
         emitRM("LDA", fp, 0, gp, "copy gp to fp");
         emitRM(" ST", ac, 0, ac, "clear location 0");
 
-        // int savedLoc = emitSkip(1);
+        int savedLoc = emitSkip(1);
 
         // Generate the I/O routines
         emitComment("Jump around i/o routines here");
-        // int savedLoc2 = emitSkip(0);
-        // emitBackup(savedLoc);
-        // emitRM_Abs("LDA", pc, savedLoc2, "");
 
         inputRoutine();
         outputRoutine();
-        emitRM("LDA", pc, pc, pc, "jump around i/o code");
+
+        int savedLoc2 = emitSkip(0);
+        emitBackup(savedLoc);
+        emitRM_Abs("LDA", pc, savedLoc2, "jump around i/o code");
 
         emitComment("End of standard prelude.");
 
+        emitBackup(savedLoc2);
+
         // Make a request to the visit method for DecList
-        trees.accept(this, -2, false);
+        trees.accept(this, -1, false);
 
         // Generate finale
         emitRM(" ST", fp, globalOffset+ofpFO, fp, "push ofp");
@@ -74,19 +76,16 @@ public class CodeGenerator implements AbsynVisitor {
         emitComment("-> id");
         emitComment("looking up id: " + simpleVar.name);
 
-        // Calculate var offset
-        int varOffset = 0;
-
         if (isAddr) {
             // Compute address of simpleVar and save it to location frameOffset
-            emitRM("LDA", ac, varOffset, fp, "load id address");
+            emitRM("LDA", ac, frameOffset, fp, "load id address");
             emitComment("<- id");
-            emitRM(" ST", ac, frameOffset, fp, "op: push left");
+            emitRM(" ST", ac, frameOffset-2, fp, "op: push left");
         } else {
             // Save the value of simpleVar to location frameOffset
-            emitRM(" LD", ac, varOffset, fp, "load id value");
+            emitRM(" LD", ac, frameOffset, fp, "load id value");
             emitComment("<- id");
-            emitRM(" ST", ac, frameOffset, fp, "op: push left");
+            emitRM(" ST", ac, frameOffset-2, fp, "op: push left");
         }
     }
 
@@ -110,7 +109,7 @@ public class CodeGenerator implements AbsynVisitor {
     }
 
     public void visit( BoolExp exp, int frameOffset, boolean isAddr ) {
-        
+
     }
 
     public void visit( VarExp exp, int frameOffset, boolean isAddr ) {
@@ -118,7 +117,21 @@ public class CodeGenerator implements AbsynVisitor {
     }
 
     public void visit( CallExp exp, int frameOffset, boolean isAddr ) {
+        emitComment("-> call of function: " + exp.func);
         exp.args.accept( this, frameOffset, false );
+
+        // code to compute first arg
+        // ST ac, frameOffset+initFO(fp)
+        // code to compute second arg
+        // ST ac, frameOffset+initFO-1s
+
+        emitRM(" ST", fp, frameOffset+ofpFO, fp, "push ofp");
+        emitRM("LDA", fp, frameOffset, fp, "push frame");
+        emitRM("LDA", ac, 1, pc, "load ac with ret ptr");
+        emitRM("LDA", pc, frameOffset, pc, "jump to fun loc");
+        emitRM(" LD", fp, ofpFO, fp, "pop frame");
+
+        emitComment("<- call");
     }
 
     public void visit( OpExp exp, int frameOffset, boolean isAddr ) {
@@ -158,10 +171,10 @@ public class CodeGenerator implements AbsynVisitor {
         exp.rhs.accept(this, frameOffset-2, false);
 
         // Do the assignment and save the result to location frameOffset
-        emitRM(" LD", ac, frameOffset-1, fp, "");
-        emitRM(" LD", ac1, frameOffset-2, fp, "");
+        emitRM(" LD", ac, frameOffset-3, fp, "");
+        emitRM(" LD", ac1, frameOffset-4, fp, "");
         emitRM(" ST", ac1, ac, ac, "");
-        emitRM(" ST", ac1, frameOffset, fp, "");
+        emitRM(" ST", ac1, frameOffset, fp, "assign: store value");
     }
 
     public void visit( IfExp exp, int frameOffset, boolean isAddr ) {
@@ -174,8 +187,23 @@ public class CodeGenerator implements AbsynVisitor {
     }
 
     public void visit( WhileExp exp, int frameOffset, boolean isAddr ) {
+        emitComment("while: jump after body comes back here");
+
+        int saveLoc = emitSkip(0);
         exp.test.accept( this, frameOffset, false );
+
+        int saveLoc2 = emitSkip(1);
         exp.body.accept( this, frameOffset, false );
+
+        emitRM_Abs("LDA", pc, saveLoc, "while: jump back to test");
+
+        int saveLoc3 = emitSkip(0);
+
+        emitBackup(saveLoc2);
+        emitRM_Abs("JEQ", ac, saveLoc3, "while: jump to end");
+        emitRestore();
+
+        emitComment("<- while");
     }
 
     public void visit( ReturnExp exp, int frameOffset, boolean isAddr ) {
@@ -199,8 +227,18 @@ public class CodeGenerator implements AbsynVisitor {
         }
 
         exp.typ.accept( this, frameOffset, false );
-        exp.params.accept( this, frameOffset, false );
+
+        emitComment("jump around function body here");
+        int savedLoc = emitSkip(1);
+
+        emitRM(" ST", ac, frameOffset, fp, "store return");
+
         exp.body.accept( this, frameOffset, false );
+
+        int savedLoc2 = emitSkip(0);
+        emitBackup(savedLoc);
+
+        // exp.params.accept( this, frameOffset, false );
 
         // Re-enter global scope
         global = true;
@@ -267,7 +305,7 @@ public class CodeGenerator implements AbsynVisitor {
         emitRM(" ST", ac, -1, fp, "store return");
         emitRM(" LD", ac, -2, fp, "load output value");
         emitRO("OUT", 0, 0, 0, "output");
-        emitRM(" LD", pc, -1, fp, "return to caller");
+        emitRM("LD", pc, -1, fp, "return to caller");
     }
 
     /****** Emitting Routines ******/

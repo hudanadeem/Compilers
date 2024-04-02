@@ -24,6 +24,6 @@ public class ArrayDec extends VarDec {
 	}
 
 	public void accept( AbsynVisitor visitor, int level, boolean flag ) {
-		visitor.visit( this, level, false );
+		visitor.visit( this, level, flag );
 	}
 }

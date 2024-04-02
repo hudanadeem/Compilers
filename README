@@ -10,18 +10,22 @@ make
  
 2. Running:
 
-* syntax tree in test folder (filename.abs):
-  java -cp /usr/share/java/cup.jar:. CM -a tests/filename.cm
+* Run only parser:
+  (prints syntax tree to <filename>.abs)
+    java -cp /usr/share/java/cup.jar:. CM -a tests/filename.cm
 
-* Run parser and semantic analyzer:
-
-  * Print to syntax tree and symbol table to terminal:
-    java -cp /usr/share/java/cup.jar:. CM tests/<filename>.cm
-
-  * Save syntax tree to <filename>.abs and symbol table to <filename>.sym:
+* Run only parser and semantic analyzer:
+  (saves syntax tree to <filename>.abs and symbol table to <filename>.sym)
     java -cp /usr/share/java/cup.jar:. CM -s tests/<filename>.cm
 
   * Note: Semantic analyzer will not run if there are parse errors
+
+* Run parser, semantic analyzer and assembly generator:
+  (saves syntax tree to <filename>.abs, symbol table to <filename>.sym and assembly code to <filename.tm>)
+    java -cp /usr/share/java/cup.jar:. CM -c tests/<filename>.cm
+
+  Example:
+    java -cp /usr/share/java/cup.jar:. CM -c tests/given_tests_C1/fac.cm
 
 3. 
 
