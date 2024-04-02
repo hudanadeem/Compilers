@@ -45,4 +45,6 @@ Test folder
   *Our test files:
     java -cp /usr/share/java/cup.jar:. CM tests/filename.cm
 
+*******************************CHECKPOINT 3*******************************
 
+    java -cp /usr/share/java/cup.jar:. CM -c tests/given_tests_C1/fac.cm
