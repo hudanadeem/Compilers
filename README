@@ -16,7 +16,7 @@ make
 
 * Run only parser and semantic analyzer:
   (saves syntax tree to <filename>.abs and symbol table to <filename>.sym)
-    java -cp /usr/share/java/cup.jar:. -s CM tests/<filename>.cm
+    java -cp /usr/share/java/cup.jar:. CM -s tests/<filename>.cm
 
   * Note: Semantic analyzer will not run if there are parse errors
 
