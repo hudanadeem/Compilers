@@ -1,4 +1,8 @@
 import absyn.*;
+import java.util.HashMap;
+import java.util.Map;
+
+
 
 public class CodeGenerator implements AbsynVisitor {
     /* Register constants */
@@ -20,9 +24,13 @@ public class CodeGenerator implements AbsynVisitor {
 
     boolean global = true;					// keeps track of whether we are in global or not
 
+    private Map<String, Integer> functionAddresses = new HashMap<>();
+
     public CodeGenerator( String fname ) {
         emitComment("C-Minus Compilation to TM Code");
         emitComment("File: " + fname);
+        functionAddresses.put("input", inputEntry); // Assuming inputEntry is correctly set
+        functionAddresses.put("output", outputEntry); // Assuming outputEntry is correctly set
     }
 
     /*** Wrapper for post-order traversal ***/
@@ -116,23 +124,30 @@ public class CodeGenerator implements AbsynVisitor {
         exp.variable.accept( this, frameOffset, isAddr );
     }
 
-    public void visit( CallExp exp, int frameOffset, boolean isAddr ) {
+    public void visit(CallExp exp, int frameOffset, boolean isAddr) {
         emitComment("-> call of function: " + exp.func);
-        exp.args.accept( this, frameOffset, false );
 
-        // code to compute first arg
-        // ST ac, frameOffset+initFO(fp)
-        // code to compute second arg
-        // ST ac, frameOffset+initFO-1s
+        // Handle argument passing here (if your language design involves passing arguments)
 
-        emitRM(" ST", fp, frameOffset+ofpFO, fp, "push ofp");
+        // Push frame pointer and set up new frame pointer
+        emitRM("ST", fp, frameOffset + ofpFO, fp, "push ofp");
         emitRM("LDA", fp, frameOffset, fp, "push frame");
         emitRM("LDA", ac, 1, pc, "load ac with ret ptr");
-        emitRM("LDA", pc, frameOffset, pc, "jump to fun loc");
-        emitRM(" LD", fp, ofpFO, fp, "pop frame");
 
+        // Jump to function address
+        Integer functionAddress = functionAddresses.get(exp.func);
+        if (functionAddress != null) {
+            emitRM_Abs("LDA", pc, functionAddress, "jump to function: " + exp.func);
+        } else {
+            emitComment("ERROR: Function " + exp.func + " not found.");
+        }
+
+        // Restore frame pointer after returning from the function call
+        emitRM("LD", fp, ofpFO, fp, "pop frame");
         emitComment("<- call");
     }
+
+
 
     public void visit( OpExp exp, int frameOffset, boolean isAddr ) {
         emitComment("-> op");
@@ -177,30 +192,48 @@ public class CodeGenerator implements AbsynVisitor {
         emitRM(" ST", ac1, frameOffset, fp, "assign: store value");
     }
 
-    public void visit( IfExp exp, int frameOffset, boolean isAddr ) {
-        exp.test.accept( this, frameOffset, false );
-        exp.then.accept( this, frameOffset, false );
+    public void visit(IfExp exp, int frameOffset, boolean isAddr) {
+        emitComment("-> if");
 
+        exp.test.accept(this, frameOffset, false);
+        int elseJump = emitSkip(1); // Skip over then block if test is false
+        exp.then.accept(this, frameOffset, false);
+
+        int endJump = 0;
         if (!(exp.elseExp instanceof NilExp)) {
-              exp.elseExp.accept( this, frameOffset, false );
+            endJump = emitSkip(1); // Skip over else block once then is done
+            emitBackup(elseJump);
+            emitRM_Abs("JEQ", ac, emitLoc, "Jump to else block");
+            emitRestore();
+
+            exp.elseExp.accept(this, frameOffset, false);
+            
+            emitBackup(endJump);
+            emitRM_Abs("LDA", pc, emitLoc, "Jump to end of if block");
+            emitRestore();
+        } else {
+            emitBackup(elseJump);
+            emitRM_Abs("JEQ", ac, emitLoc, "Jump to end of if block if false");
+            emitRestore();
         }
-    }
 
-    public void visit( WhileExp exp, int frameOffset, boolean isAddr ) {
-        emitComment("while: jump after body comes back here");
+        emitComment("<- if");
+}
 
-        int saveLoc = emitSkip(0);
-        exp.test.accept( this, frameOffset, false );
 
-        int saveLoc2 = emitSkip(1);
-        exp.body.accept( this, frameOffset, false );
+    public void visit(WhileExp exp, int frameOffset, boolean isAddr) {
+        int startLoc = emitLoc;
+        emitComment("-> while: test");
+        exp.test.accept(this, frameOffset, false);
 
-        emitRM_Abs("LDA", pc, saveLoc, "while: jump back to test");
+        int jumpToEnd = emitSkip(1); // Placeholder for jump to end
+        emitComment("-> while: body");
+        exp.body.accept(this, frameOffset, false);
+        emitRM_Abs("LDA", pc, startLoc, "jump back to start of while");
 
-        int saveLoc3 = emitSkip(0);
-
-        emitBackup(saveLoc2);
-        emitRM_Abs("JEQ", ac, saveLoc3, "while: jump to end");
+        int endLoc = emitLoc;
+        emitBackup(jumpToEnd);
+        emitRM_Abs("JEQ", ac, endLoc, "jump to end of while if test is false");
         emitRestore();
 
         emitComment("<- while");
@@ -212,36 +245,39 @@ public class CodeGenerator implements AbsynVisitor {
         }
     }
 
-    public void visit( CompoundExp exp, int frameOffset, boolean isAddr ) {
-        exp.decs.accept( this, frameOffset, false );
-        exp.exps.accept( this, frameOffset, false );
-    }
-
-    public void visit( FunctionDec exp, int frameOffset, boolean isAddr ) {
-        // Leave global scope 
-        global = false;
-        emitComment("processing function: " + exp.func);
-
-        if (exp.func == "main") {
-            mainEntry = globalOffset;
+    public void visit(CompoundExp exp, int frameOffset, boolean isAddr) {
+        emitComment("-> compound statement");
+   
+        if (exp.decs != null) {
+            exp.decs.accept(this, frameOffset, false);
+        }
+        
+        if (exp.exps != null) {
+            exp.exps.accept(this, frameOffset, false);
         }
 
-        exp.typ.accept( this, frameOffset, false );
+        emitComment("<- compound statement");
+    }
 
-        emitComment("jump around function body here");
-        int savedLoc = emitSkip(1);
 
-        emitRM(" ST", ac, frameOffset, fp, "store return");
+    public void visit(FunctionDec exp, int frameOffset, boolean isAddr) {
+        emitComment("processing function: " + exp.func);
+        if (exp.func.equals("main")) {
+            mainEntry = emitLoc; // Record the start address of the main function
+        }
 
-        exp.body.accept( this, frameOffset, false );
+        // Record the function's start address for other functions
+        functionAddresses.put(exp.func, emitLoc);
 
-        int savedLoc2 = emitSkip(0);
-        emitBackup(savedLoc);
+        // Jump around the function body (to be backfilled later)
+        int jumpLoc = emitSkip(1);
+        exp.body.accept(this, frameOffset, false);
+        int afterFunc = emitLoc;
 
-        // exp.params.accept( this, frameOffset, false );
-
-        // Re-enter global scope
-        global = true;
+        // Backfill the jump around the function body
+        emitBackup(jumpLoc);
+        emitRM_Abs("LDA", pc, afterFunc, "jump around function body");
+        emitRestore();
     }
 
     public void visit( SimpleDec exp, int frameOffset, boolean isAddr ) {
@@ -312,7 +348,7 @@ public class CodeGenerator implements AbsynVisitor {
 
     /* Generate certain kind of assembly instructions */
     void emitRO( String op, int r, int s, int t, String c ) {
-        System.out.print( emitLoc + ":     " + op + "  " + r + ", " + s + ", " + t );
+        System.out.print( " "+emitLoc + ":     " + op + "  " + r + ", " + s + ", " + t );
         System.out.println( "\t" + c );
         emitLoc++;
         if ( highEmitLoc < emitLoc ) {
@@ -322,7 +358,7 @@ public class CodeGenerator implements AbsynVisitor {
 
     /* Generate certain kind of assembly instructions */
     void emitRM( String op, int r, int d, int s, String c ) {
-        System.out.print( emitLoc + ":     " + op + "  " + r + ", " + d + "(" + s + ")" );
+        System.out.print( " "+emitLoc + ":     " + op + "  " + r + "," + d + "(" + s + ")" );
         System.out.println( "\t" + c );
         emitLoc++;
         if (highEmitLoc < emitLoc) {
@@ -332,7 +368,7 @@ public class CodeGenerator implements AbsynVisitor {
 
     /* Jump from location emitLoc to location a */
     void emitRM_Abs( String op, int r, int a, String c ) {
-        System.out.print( emitLoc + ":     " + op + "  " + r + ", " + (a-(emitLoc+1)) + "(" + pc + ")" );
+        System.out.print( " "+emitLoc + ":     " + op + "  " + r + ", " + (a-(emitLoc+1)) + "(" + pc + ")" );
         System.out.println( "\t" + c );
         emitLoc++;
         if (highEmitLoc < emitLoc) {
@@ -366,5 +402,9 @@ public class CodeGenerator implements AbsynVisitor {
     /* Generate one line of comment */
     void emitComment( String c ) {
         System.out.println( "* " + c );
+    }
+
+    private int getFunctionAddress(String functionName) {
+        return functionAddresses.getOrDefault(functionName, -1); // Returns -1 if function not found
     }
 }
