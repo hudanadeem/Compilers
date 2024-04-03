@@ -1,26 +1,8 @@
-/* incompatable return, array index incorrect and mismatch assigned expression*/
+/*Testing is Main is not there*/
 
-void funtwo(void) {
-    int x;
-    x = 2;
-    return x; 
-}
-
-void processAction(void) {
-    bool isActive;
-}
-
-void performOperation(void);
-
-int main(void) {
+void performOperation(void) {
     int numbers[3];
     int index;
-    int status;
-
     numbers[index] = 10; 
-    numbers[performOperation()] = 20; 
-
-    status = processAction(); 
-
-    return 0;
+    numbers[2] = 20; 
 }
