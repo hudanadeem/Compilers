@@ -1,4 +1,5 @@
 import absyn.*;
+import java.util.HashMap;
 
 public class CodeGenerator implements AbsynVisitor {
     /* Register constants */
@@ -9,20 +10,27 @@ public class CodeGenerator implements AbsynVisitor {
     public static final int ac1 = 1;			// register 1
 
     /* Tracking variables */
-    int mainEntry = 0;							// absolute address for main
+    int mainEntry = 0;						// absolute address for main
     int inputEntry, outputEntry;			// to access input and output later, with calls jump to the starts of these functions
     int globalOffset = 0;					// next available loc after global frame
     int emitLoc = 0;  						// current instruction location
     int highEmitLoc = 0;					// next available space for new instructions
     int ofpFO = 0;							// frame pointer of the caller
-    int retFO = 0;							// return address to go back to after callee is executed
-    int initFO = 0;							// initial frame offset of function stack frame
+    int retFO = -1;							// return address to go back to after callee is executed
+    int initFO = -2;						// initial frame offset of function stack frame
+    int decOffset = 0;
 
     boolean global = true;					// keeps track of whether we are in global or not
+    private HashMap<String, VarDec> varTable;   // keeps track of local declared variables
+    private HashMap<String, int> funTable;   // keeps track of function locations
 
     public CodeGenerator( String fname ) {
         emitComment("C-Minus Compilation to TM Code");
         emitComment("File: " + fname);
+
+        varTable = new HashMap<String, VarDec>();
+        funTable = new HashMap<String, int>();
+
     }
 
     /*** Wrapper for post-order traversal ***/
@@ -40,7 +48,9 @@ public class CodeGenerator implements AbsynVisitor {
         // Generate the I/O routines
         emitComment("Jump around i/o routines here");
 
+        inputEntry = emitSkip(0);
         inputRoutine();
+        outputEntry = emitSkip(0);
         outputRoutine();
 
         int savedLoc2 = emitSkip(0);
@@ -52,7 +62,7 @@ public class CodeGenerator implements AbsynVisitor {
         emitBackup(savedLoc2);
 
         // Make a request to the visit method for DecList
-        trees.accept(this, -1, false);
+        trees.accept(this, initFO, false);
 
         // Generate finale
         emitRM(" ST", fp, globalOffset+ofpFO, fp, "push ofp");
@@ -78,12 +88,12 @@ public class CodeGenerator implements AbsynVisitor {
 
         if (isAddr) {
             // Compute address of simpleVar and save it to location frameOffset
-            emitRM("LDA", ac, frameOffset, fp, "load id address");
+            emitRM("LDA", ac, lookupVar(simpleVar.name), fp, "load id address");
             emitComment("<- id");
             emitRM(" ST", ac, frameOffset-2, fp, "op: push left");
         } else {
             // Save the value of simpleVar to location frameOffset
-            emitRM(" LD", ac, frameOffset, fp, "load id value");
+            emitRM(" LD", ac, lookupVar(simpleVar.name), fp, "load id value");
             emitComment("<- id");
             emitRM(" ST", ac, frameOffset-2, fp, "op: push left");
         }
@@ -123,12 +133,12 @@ public class CodeGenerator implements AbsynVisitor {
         // code to compute first arg
         // ST ac, frameOffset+initFO(fp)
         // code to compute second arg
-        // ST ac, frameOffset+initFO-1s
+        // ST ac, frameOffset+initFO-1(fp)
 
         emitRM(" ST", fp, frameOffset+ofpFO, fp, "push ofp");
         emitRM("LDA", fp, frameOffset, fp, "push frame");
         emitRM("LDA", ac, 1, pc, "load ac with ret ptr");
-        emitRM("LDA", pc, frameOffset, pc, "jump to fun loc");
+        emitRM_Abs("LDA", pc, inputEntry, "jump to fun loc");
         emitRM(" LD", fp, ofpFO, fp, "pop frame");
 
         emitComment("<- call");
@@ -138,9 +148,9 @@ public class CodeGenerator implements AbsynVisitor {
         emitComment("-> op");
 
         if (exp.left != null) {
-            exp.left.accept(this, frameOffset-1, false);
+            exp.left.accept(this, frameOffset-1, isAddr);
         }
-        exp.right.accept(this, frameOffset-2, false);
+        exp.right.accept(this, frameOffset-2, isAddr);
 
         // Do the operation and save the result in location frameOffset
         emitRM(" LD", ac, frameOffset-1, fp, "op: load left");
@@ -161,14 +171,11 @@ public class CodeGenerator implements AbsynVisitor {
 
         emitComment("<- op");
         emitRM(" ST", ac, frameOffset, fp, "op: push left");
-
-        // register "0" is used heavily for the result, which needs to be saved to a memory location
-        // as soon as possible
     }
 
     public void visit( AssignExp exp, int frameOffset, boolean isAddr ) {
         exp.lhs.accept(this, frameOffset-1, true);
-        exp.rhs.accept(this, frameOffset-2, false);
+        exp.rhs.accept(this, frameOffset-2, isAddr);
 
         // Do the assignment and save the result to location frameOffset
         emitRM(" LD", ac, frameOffset-3, fp, "");
@@ -178,11 +185,11 @@ public class CodeGenerator implements AbsynVisitor {
     }
 
     public void visit( IfExp exp, int frameOffset, boolean isAddr ) {
-        exp.test.accept( this, frameOffset, false );
-        exp.then.accept( this, frameOffset, false );
+        exp.test.accept( this, frameOffset, isAddr );
+        exp.then.accept( this, frameOffset, isAddr );
 
         if (!(exp.elseExp instanceof NilExp)) {
-              exp.elseExp.accept( this, frameOffset, false );
+              exp.elseExp.accept( this, frameOffset, isAddr );
         }
     }
 
@@ -213,8 +220,11 @@ public class CodeGenerator implements AbsynVisitor {
     }
 
     public void visit( CompoundExp exp, int frameOffset, boolean isAddr ) {
+        emitComment("-> compound statement");
         exp.decs.accept( this, frameOffset, false );
+        // frameOffset = frameOffset - decOffset;
         exp.exps.accept( this, frameOffset, false );
+        emitComment("<- compound statement");
     }
 
     public void visit( FunctionDec exp, int frameOffset, boolean isAddr ) {
@@ -222,8 +232,8 @@ public class CodeGenerator implements AbsynVisitor {
         global = false;
         emitComment("processing function: " + exp.func);
 
-        if (exp.func == "main") {
-            mainEntry = globalOffset;
+        if (exp.func.equals("main")) {
+            mainEntry = emitLoc;
         }
 
         exp.typ.accept( this, frameOffset, false );
@@ -231,34 +241,55 @@ public class CodeGenerator implements AbsynVisitor {
         emitComment("jump around function body here");
         int savedLoc = emitSkip(1);
 
-        emitRM(" ST", ac, frameOffset, fp, "store return");
+        emitRM(" ST", ac, retFO, fp, "store return");
 
         exp.body.accept( this, frameOffset, false );
-
-        int savedLoc2 = emitSkip(0);
-        emitBackup(savedLoc);
 
         // exp.params.accept( this, frameOffset, false );
 
         // Re-enter global scope
+        decOffset = 0;
         global = true;
+
+        emitRM(" LD", pc, retFO, fp, "return to caller");
+
+        int savedLoc2 = emitSkip(0);
+        emitBackup(savedLoc);
+        emitRM("LDA", pc, savedLoc2, pc, "jump around fn body");
+
+        emitComment("<- funcdecl");
+
+        emitBackup(savedLoc2);
     }
 
     public void visit( SimpleDec exp, int frameOffset, boolean isAddr ) {
         if (global) {
             emitComment("allocating global var: " + exp.name);
+            globalOffset--;
             exp.setNestLevel(0);
-            exp.setOffset(frameOffset);
+            exp.setOffset(globalOffset);
         }
         else {
             emitComment("processing local var: "+ exp.name);
             exp.setNestLevel(1);
             exp.setOffset(frameOffset);
+            insertVar(exp.name, exp);
         }
     }
 
     public void visit( ArrayDec exp, int frameOffset, boolean isAddr ) {
-        
+        if (global) {
+            emitComment("allocating global var: " + exp.name);
+            globalOffset = globalOffset - (exp.size + 1);
+            exp.setNestLevel(0);
+            exp.setOffset(globalOffset);
+        }
+        else {
+            emitComment("processing local var: "+ exp.name);
+            exp.setNestLevel(1);
+            exp.setOffset(frameOffset);
+            insertVar(exp.name, exp);
+        }
     }
 
     public void visit( DecList decList, int frameOffset, boolean isAddr ) {
@@ -274,7 +305,8 @@ public class CodeGenerator implements AbsynVisitor {
         while( varDecList != null ) {
             if (varDecList.head != null) {
                 varDecList.head.accept( this, frameOffset, false );
-                frameOffset++;
+                frameOffset--;
+                decOffset++;
             }
             varDecList = varDecList.tail;
         }
@@ -292,6 +324,7 @@ public class CodeGenerator implements AbsynVisitor {
     /******* I/O Routines *******/
 
     void inputRoutine() {
+        inputEntry = emitLoc;
         emitComment("code for input routine");
         
         emitRM(" ST", ac, -1, fp, "store return");
@@ -300,6 +333,7 @@ public class CodeGenerator implements AbsynVisitor {
     }
 
     void outputRoutine() {
+        outputEntry = emitLoc;
         emitComment("code for output routine");
         
         emitRM(" ST", ac, -1, fp, "store return");
@@ -366,5 +400,53 @@ public class CodeGenerator implements AbsynVisitor {
     /* Generate one line of comment */
     void emitComment( String c ) {
         System.out.println( "* " + c );
+    }
+
+    /**** Helper Methods ****/
+
+    /* Looks up location of variable with identifier key */
+    private int lookupVar(String key) {
+        if (table.containsKey(key)) {
+            VarDec dec = table.get(key);
+            return dec.offset;
+        } else {
+            return -1;
+        }
+    }
+
+    /* Insert specified variable at specified key in table */
+    private void insertVar(String key, VarDec dec) {
+
+        // change location if already existss
+        if (table.containsKey(key)) {
+            VarDec newDec = table.get(key);
+            newDec.offset = dec.offset;
+        }
+        else {
+            table.put(key, dec);
+        }
+    }
+
+    /* Looks up location of function with identifier key */
+    private int lookupFun(String key) {
+        if (table.containsKey(key)) {
+            int loc = table.get(key);
+            return loc;
+        } else {
+            return -1;
+        }
+    }
+
+    /* Insert specified function at specified key in table */
+    private void insertFun(String key, int loc) {
+
+        // change location if already existss
+        if (table.containsKey(key)) {
+            int newLoc = table.get(key);
+            newLoc = loc;
+        }
+        else {
+            table.put(key, loc);
+        }
     }
 }
