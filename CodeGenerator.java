@@ -22,14 +22,14 @@ public class CodeGenerator implements AbsynVisitor {
 
     boolean global = true;					// keeps track of whether we are in global or not
     private HashMap<String, VarDec> varTable;   // keeps track of local declared variables
-    private HashMap<String, int> funTable;   // keeps track of function locations
+    private HashMap<String, Integer> funTable;   // keeps track of function locations
 
     public CodeGenerator( String fname ) {
         emitComment("C-Minus Compilation to TM Code");
         emitComment("File: " + fname);
 
         varTable = new HashMap<String, VarDec>();
-        funTable = new HashMap<String, int>();
+        funTable = new HashMap<String, Integer>();
 
     }
 
@@ -49,8 +49,11 @@ public class CodeGenerator implements AbsynVisitor {
         emitComment("Jump around i/o routines here");
 
         inputEntry = emitSkip(0);
+        insertFun("input", inputEntry);
         inputRoutine();
+
         outputEntry = emitSkip(0);
+        insertFun("output", outputEntry);
         outputRoutine();
 
         int savedLoc2 = emitSkip(0);
@@ -138,7 +141,7 @@ public class CodeGenerator implements AbsynVisitor {
         emitRM(" ST", fp, frameOffset+ofpFO, fp, "push ofp");
         emitRM("LDA", fp, frameOffset, fp, "push frame");
         emitRM("LDA", ac, 1, pc, "load ac with ret ptr");
-        emitRM_Abs("LDA", pc, inputEntry, "jump to fun loc");
+        emitRM_Abs("LDA", pc, lookupFun(exp.func), "jump to fun loc");
         emitRM(" LD", fp, ofpFO, fp, "pop frame");
 
         emitComment("<- call");
@@ -233,8 +236,10 @@ public class CodeGenerator implements AbsynVisitor {
         emitComment("processing function: " + exp.func);
 
         if (exp.func.equals("main")) {
-            mainEntry = emitLoc;
+            mainEntry = emitSkip(0);
         }
+
+        insertFun(exp.func, emitSkip(0));
 
         exp.typ.accept( this, frameOffset, false );
 
@@ -406,8 +411,8 @@ public class CodeGenerator implements AbsynVisitor {
 
     /* Looks up location of variable with identifier key */
     private int lookupVar(String key) {
-        if (table.containsKey(key)) {
-            VarDec dec = table.get(key);
+        if (varTable.containsKey(key)) {
+            VarDec dec = varTable.get(key);
             return dec.offset;
         } else {
             return -1;
@@ -418,19 +423,19 @@ public class CodeGenerator implements AbsynVisitor {
     private void insertVar(String key, VarDec dec) {
 
         // change location if already existss
-        if (table.containsKey(key)) {
-            VarDec newDec = table.get(key);
+        if (varTable.containsKey(key)) {
+            VarDec newDec = varTable.get(key);
             newDec.offset = dec.offset;
         }
         else {
-            table.put(key, dec);
+            varTable.put(key, dec);
         }
     }
 
     /* Looks up location of function with identifier key */
     private int lookupFun(String key) {
-        if (table.containsKey(key)) {
-            int loc = table.get(key);
+        if (funTable.containsKey(key)) {
+            int loc = funTable.get(key);
             return loc;
         } else {
             return -1;
@@ -441,12 +446,12 @@ public class CodeGenerator implements AbsynVisitor {
     private void insertFun(String key, int loc) {
 
         // change location if already existss
-        if (table.containsKey(key)) {
-            int newLoc = table.get(key);
+        if (funTable.containsKey(key)) {
+            int newLoc = funTable.get(key);
             newLoc = loc;
         }
         else {
-            table.put(key, loc);
+            funTable.put(key, loc);
         }
     }
 }
