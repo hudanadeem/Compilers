@@ -25,7 +25,7 @@ make
     java -cp /usr/share/java/cup.jar:. CM -c tests/<filename>.cm
 
   Example:
-    java -cp /usr/share/java/cup.jar:. CM -c tests/given_tests_C1/fac.cm
+    java -cp /usr/share/java/cup.jar:. CM -c tests/<filename>.cm
 
 3. 
 
@@ -33,18 +33,21 @@ Test folder
 
 *******************************CHECKPOINT 1*******************************
   *Provided test files:
-    java -cp /usr/share/java/cup.jar:. CM tests/given_tests_C1/filename.cm
+    java -cp /usr/share/java/cup.jar:. CM -a tests/given_tests_C1/filename.cm
   
   *Our test files:
-    java -cp /usr/share/java/cup.jar:. CM tests/12345_C1/filename.cm
+    java -cp /usr/share/java/cup.jar:. CM -a tests/12345_C1/filename.cm
 
 *******************************CHECKPOINT 2*******************************
   *Provided test files:
-    java -cp /usr/share/java/cup.jar:. CM tests/given_tests_C2/filename.cm
+    java -cp /usr/share/java/cup.jar:. CM -s tests/given_tests_C2/filename.cm
   
   *Our test files:
-    java -cp /usr/share/java/cup.jar:. CM tests/filename.cm
+    java -cp /usr/share/java/cup.jar:. CM -s tests/filename.cm
 
 *******************************CHECKPOINT 3*******************************
+  *Provided test files:
+    java -cp /usr/share/java/cup.jar:. CM -c tests/given_tests_C1/filename.cm
 
-    java -cp /usr/share/java/cup.jar:. CM -c tests/given_tests_C1/fac.cm
+  *Our test files:
+    java -cp /usr/share/java/cup.jar:. CM -c tests/filename.cm
