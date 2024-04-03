@@ -226,7 +226,7 @@ public class CodeGenerator implements AbsynVisitor {
         emitComment("-> while: test");
         exp.test.accept(this, frameOffset, false);
 
-        int jumpToEnd = emitSkip(1); // Placeholder for jump to end
+        int jumpToEnd = emitSkip(1); 
         emitComment("-> while: body");
         exp.body.accept(this, frameOffset, false);
         emitRM_Abs("LDA", pc, startLoc, "jump back to start of while");
