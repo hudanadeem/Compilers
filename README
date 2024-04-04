@@ -2,8 +2,6 @@ Isabella McIvor (1101334)
 Huda Nadeem (11439431)
 Zuya Abro (1109843)
  
-Checkpoint Two
---------------
  
 1. Compiling:
 make
@@ -28,8 +26,6 @@ make
     java -cp /usr/share/java/cup.jar:. CM -c tests/<filename>.cm
 
 3. 
-
-Test folder
 
 *******************************CHECKPOINT 1*******************************
   *Provided test files:
