@@ -22,8 +22,6 @@ make
   (saves syntax tree to <filename>.abs, symbol table to <filename>.sym and assembly code to <filename.tm>)
     java -cp /usr/share/java/cup.jar:. CM -c tests/<filename>.cm
 
-  Example:
-    java -cp /usr/share/java/cup.jar:. CM -c tests/<filename>.cm
 
 3. 
 
