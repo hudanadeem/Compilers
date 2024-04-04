@@ -20,9 +20,9 @@ public class CodeGenerator implements AbsynVisitor {
     int initFO = -2;						// initial frame offset of function stack frame
     int decOffset = 0;
 
-    boolean global = true;					// keeps track of whether we are in global or not
+    boolean global = true;					    // keeps track of whether we are in global or not
     private HashMap<String, VarDec> varTable;   // keeps track of local declared variables
-    private HashMap<String, Integer> funTable;   // keeps track of function locations
+    private HashMap<String, Integer> funTable;  // keeps track of function locations
 
     public CodeGenerator( String fname ) {
         emitComment("C-Minus Compilation to TM Code");
@@ -70,7 +70,7 @@ public class CodeGenerator implements AbsynVisitor {
         // Generate finale
         emitRM(" ST", fp, globalOffset+ofpFO, fp, "push ofp");
         emitRM("LDA", fp, globalOffset, fp, "push frame");
-        emitRM("LDA", ac, 1, pc, "load ac with ret ptr");
+        emitRM("LDA", ac, retFO, pc, "load ac with ret ptr");
         emitRM_Abs("LDA", pc, mainEntry, "jump to main loc");
         emitRM(" LD", fp, ofpFO, fp, "pop frame");
 
@@ -93,12 +93,12 @@ public class CodeGenerator implements AbsynVisitor {
             // Compute address of simpleVar and save it to location frameOffset
             emitRM("LDA", ac, lookupVar(simpleVar.name), fp, "load id address");
             emitComment("<- id");
-            emitRM(" ST", ac, frameOffset-2, fp, "op: push left");
+            emitRM(" ST", ac, frameOffset, fp, "op: push left");
         } else {
             // Save the value of simpleVar to location frameOffset
             emitRM(" LD", ac, lookupVar(simpleVar.name), fp, "load id value");
             emitComment("<- id");
-            emitRM(" ST", ac, frameOffset-2, fp, "op: push left");
+            emitRM(" ST", ac, frameOffset, fp, "op: push left");
         }
     }
 
@@ -171,20 +171,35 @@ public class CodeGenerator implements AbsynVisitor {
         else if (exp.op == OpExp.DIV) {
             emitRO("DIV", ac, ac, ac1, "op /");
         }
+        else if (exp.op == OpExp.GT) {
+            emitRO("JGT", ac, 2, pc, "br if true");
+        }
+        else if (exp.op == OpExp.GTE) {
+            emitRO("JGE", ac, 2, pc, "br if true");
+        }
+        else if (exp.op == OpExp.LT) {
+            emitRO("JLT", ac, 2, pc, "br if true");
+        }
+        else if (exp.op == OpExp.LTE) {
+            emitRO("JLE", ac, 2, pc, "br if true");
+        }
+        else if (exp.op == OpExp.NE) {
+            emitRO("JNE", ac, 2, pc, "br if true");
+        }
 
         emitComment("<- op");
         emitRM(" ST", ac, frameOffset, fp, "op: push left");
     }
 
     public void visit( AssignExp exp, int frameOffset, boolean isAddr ) {
-        exp.lhs.accept(this, frameOffset-1, true);
-        exp.rhs.accept(this, frameOffset-2, isAddr);
+        exp.lhs.accept(this, frameOffset, true);
+        exp.rhs.accept(this, frameOffset-1, isAddr);
 
         // Do the assignment and save the result to location frameOffset
-        emitRM(" LD", ac, frameOffset-3, fp, "");
-        emitRM(" LD", ac1, frameOffset-4, fp, "");
-        emitRM(" ST", ac1, ac, ac, "");
-        emitRM(" ST", ac1, frameOffset, fp, "assign: store value");
+        emitRM(" LD", ac1, frameOffset, fp, "load left");
+        // emitRM(" LD", ac1, frameOffset-4, fp, "");
+        // emitRM(" ST", ac1, ac, ac, "");
+        emitRM(" ST", ac, ac, ac1, "assign: store value");
     }
 
     public void visit( IfExp exp, int frameOffset, boolean isAddr ) {
@@ -225,7 +240,7 @@ public class CodeGenerator implements AbsynVisitor {
     public void visit( CompoundExp exp, int frameOffset, boolean isAddr ) {
         emitComment("-> compound statement");
         exp.decs.accept( this, frameOffset, false );
-        // frameOffset = frameOffset - decOffset;
+        frameOffset = frameOffset - decOffset;
         exp.exps.accept( this, frameOffset, false );
         emitComment("<- compound statement");
     }
@@ -279,6 +294,7 @@ public class CodeGenerator implements AbsynVisitor {
             exp.setNestLevel(1);
             exp.setOffset(frameOffset);
             insertVar(exp.name, exp);
+            decOffset++;
         }
     }
 
@@ -294,6 +310,7 @@ public class CodeGenerator implements AbsynVisitor {
             exp.setNestLevel(1);
             exp.setOffset(frameOffset);
             insertVar(exp.name, exp);
+            decOffset++;
         }
     }
 
@@ -311,7 +328,6 @@ public class CodeGenerator implements AbsynVisitor {
             if (varDecList.head != null) {
                 varDecList.head.accept( this, frameOffset, false );
                 frameOffset--;
-                decOffset++;
             }
             varDecList = varDecList.tail;
         }
@@ -332,19 +348,19 @@ public class CodeGenerator implements AbsynVisitor {
         inputEntry = emitLoc;
         emitComment("code for input routine");
         
-        emitRM(" ST", ac, -1, fp, "store return");
-        emitRO(" IN", 0, 0, 0, "input");
-        emitRM(" LD", pc, -1, fp, "return to caller");
+        emitRM(" ST", ac, retFO, fp, "store return");
+        emitRO(" IN", ac, ac, ac, "input");
+        emitRM(" LD", pc, retFO, fp, "return to caller");
     }
 
     void outputRoutine() {
         outputEntry = emitLoc;
         emitComment("code for output routine");
         
-        emitRM(" ST", ac, -1, fp, "store return");
-        emitRM(" LD", ac, -2, fp, "load output value");
-        emitRO("OUT", 0, 0, 0, "output");
-        emitRM("LD", pc, -1, fp, "return to caller");
+        emitRM(" ST", ac, retFO, fp, "store return");
+        emitRM(" LD", ac, initFO, fp, "load output value");
+        emitRO("OUT", ac, ac, ac, "output");
+        emitRM("LD", pc, retFO, fp, "return to caller");
     }
 
     /****** Emitting Routines ******/
