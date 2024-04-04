@@ -86,8 +86,15 @@ class CM {
       if (ASSEMBLY) {
         String outputFileName = inputFileName.substring(0, inputFileName.lastIndexOf('.')) + ".tm";
 
+        File outputFile = new File(outputFileName);
+        PrintStream fileOut = new PrintStream(new FileOutputStream(outputFile));
+        System.setOut(fileOut); // Redirect output to the file
+
         CodeGenerator assemblyGen = new CodeGenerator(outputFileName);
         assemblyGen.visit(result);
+
+        fileOut.close(); // Close the file stream
+        System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
       }
         
 
