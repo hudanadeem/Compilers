@@ -39,7 +39,7 @@ make
     java -cp /usr/share/java/cup.jar:. CM -s tests/given_tests_C2/filename.cm
   
   *Our test files:
-    java -cp /usr/share/java/cup.jar:. CM -s tests/filename.cm
+    java -cp /usr/share/java/cup.jar:. CM -s tests/12345_C2/filename.cm
 
 *******************************CHECKPOINT 3*******************************
   *Provided test files:
