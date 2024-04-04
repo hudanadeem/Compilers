@@ -1,1 +1,12 @@
 /*For 9.cm and 0.cm, anything goes and there is no limit to the number and types of errors in them */
+/*For 9.cm and 0.cm, anything goes and there is no limit to the number and types of errors in them */
+/*Testing if Main is not there, index type incorrect (should be int), missing semi-colon*/
+
+void performOperation(void) {
+    int numbers[3];
+    int index;
+    numbers[index] = 10; 
+    numbers[performOperation] = 20; 
+
+    char error = "thisError!"
+}
