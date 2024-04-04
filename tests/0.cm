@@ -1,1 +1,11 @@
-/*For 9.cm and 0.cm, anything goes and there is no limit to the number and types of errors in them */
+/* For 9.cm and 0.cm, anything goes and there is no limit to the number and types of errors in them */
+/* syntactic errors and semantic errors
+    missing semi colon, mismatch types (adding char value to int type), and missing end bracket*/ 
+
+void main(void) {
+
+    int status
+    status = 9;
+
+    char str = "Hello, world!";
+    int sum = str + 4;
