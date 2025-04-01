@@ -34,6 +34,7 @@ Make sure you're in the root directory.
 
 ```bash
 make
+```
 
 ### Run Parser Only
 java -cp /usr/share/java/cup.jar:. CM -a tests/<filename>.cm
