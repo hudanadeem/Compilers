@@ -30,17 +30,30 @@ The compiler is structured in stages. You can run each stage individually or run
 
 ## 🛠️ How to Compile
 
-Make sure you're in the root directory.
+Make sure you're in the root directory:
 
 ```bash
 make
 ```
 
+---
+
+## ▶️ How to Run
+
 ### Run Parser Only
+
+```bash
 java -cp /usr/share/java/cup.jar:. CM -a tests/<filename>.cm
+```
 
 ### Run Parser + Semantic Analyzer
+
+```bash
 java -cp /usr/share/java/cup.jar:. CM -s tests/<filename>.cm
+```
 
 ### Run Full Compiler (Parser + Semantic + CodeGen)
+
+```bash
 java -cp /usr/share/java/cup.jar:. CM -c tests/<filename>.cm
+```
