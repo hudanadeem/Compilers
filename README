@@ -1,47 +1,45 @@
-Isabella McIvor
-Huda Nadeem
-Zuya Abro
- 
- 
-1. Compiling:
+# ⚙️ C-Minus Compiler (Java)
+
+A full compiler for a simplified C-like language called **C-Minus**, written in Java. The compiler supports three main stages:
+
+1. **Parsing**: Converts `.cm` source files into abstract syntax trees (ASTs)
+2. **Semantic Analysis**: Builds symbol tables and performs type checking
+3. **Code Generation**: Outputs assembly code in Tiny Machine (TM) language
+
+---
+
+## 👩‍💻 Authors
+
+- Isabella McIvor  
+- Huda Nadeem  
+- Zuya Abro
+
+---
+
+## 🧠 Project Structure
+
+The compiler is structured in stages. You can run each stage individually or run the full compiler:
+
+| Stage | Flag | Output |
+|-------|------|--------|
+| Parser only | `-a` | `<filename>.abs` (syntax tree) |
+| Parser + Semantic Analyzer | `-s` | `<filename>.abs`, `<filename>.sym` (symbol table) |
+| Full Compiler | `-c` | `<filename>.abs`, `<filename>.sym`, `<filename>.tm` (assembly code) |
+
+---
+
+## 🛠️ How to Compile
+
+Make sure you're in the root directory.
+
+```bash
 make
- 
-2. Running:
 
-* Run only parser:
-  (prints syntax tree to <filename>.abs)
-    java -cp /usr/share/java/cup.jar:. CM -a tests/filename.cm
+### Run Parser Only
+java -cp /usr/share/java/cup.jar:. CM -a tests/<filename>.cm
 
-* Run only parser and semantic analyzer:
-  (saves syntax tree to <filename>.abs and symbol table to <filename>.sym)
-    java -cp /usr/share/java/cup.jar:. CM -s tests/<filename>.cm
+### Run Parser + Semantic Analyzer
+java -cp /usr/share/java/cup.jar:. CM -s tests/<filename>.cm
 
-  * Note: Semantic analyzer will not run if there are parse errors
-
-* Run parser, semantic analyzer and assembly generator:
-  (saves syntax tree to <filename>.abs, symbol table to <filename>.sym and assembly code to <filename.tm>)
-    java -cp /usr/share/java/cup.jar:. CM -c tests/<filename>.cm
-
-
-3. 
-
-*******************************CHECKPOINT 1*******************************
-  *Provided test files:
-    java -cp /usr/share/java/cup.jar:. CM -a tests/given_tests_C1/filename.cm
-  
-  *Our test files:
-    java -cp /usr/share/java/cup.jar:. CM -a tests/12345_C1/filename.cm
-
-*******************************CHECKPOINT 2*******************************
-  *Provided test files:
-    java -cp /usr/share/java/cup.jar:. CM -s tests/given_tests_C2/filename.cm
-  
-  *Our test files:
-    java -cp /usr/share/java/cup.jar:. CM -s tests/12345_C2/filename.cm
-
-*******************************CHECKPOINT 3*******************************
-  *Provided test files:
-    java -cp /usr/share/java/cup.jar:. CM -c tests/given_tests_C1/filename.cm
-
-  *Our test files:
-    java -cp /usr/share/java/cup.jar:. CM -c tests/filename.cm
+### Run Full Compiler (Parser + Semantic + CodeGen)
+java -cp /usr/share/java/cup.jar:. CM -c tests/<filename>.cm
