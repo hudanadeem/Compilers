@@ -8,6 +8,26 @@ A full compiler for a simplified C-like language called **C-Minus**, written in 
 
 ---
 
+## 🧑‍💻 Tech Stack
+
+- <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/java/java-original.svg" width="30"/> **Java**: The primary language used to build the compiler.
+- <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/bash/bash-original.svg" width="30"/> **Lex**: Used for lexical analysis to tokenize the C-Minus source code.
+- <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/makefile/makefile-original.svg" width="30"/> **Makefile**: Used for automating the build process and managing compilation.
+
+
+---
+
+## 📂 Git Clone Instructions
+
+To get started with the project, clone the repository to your local machine:
+
+```bash
+git clone https://github.com/your-username/c-minus-compiler.git
+cd c-minus-compiler
+```
+
+---
+
 ## 👩‍💻 Authors
 
 - Isabella McIvor  
