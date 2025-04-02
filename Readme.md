@@ -12,10 +12,19 @@ A full compiler for a simplified C-like language called **C-Minus**, written in 
 
 <table>
   <tr>
-    <td><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/java/java-original.svg" width="30"/> Java: The primary language used to build the compiler.</td>
-  <td><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/bash/bash-original.svg" width="30"/> Lex: Used for lexical analysis to tokenize the C-Minus source code.</td>
+    <th>Technology</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/java/java-original.svg" width="30"/> Java </td>
+    <td>The primary language used to build the compiler.</td>
+  </tr>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/bash/bash-original.svg" width="30"/> Lex </td>
+    <td>Used for lexical analysis to tokenize the C-Minus source code.</td>
   </tr>
 </table>
+
 
 ---
 
